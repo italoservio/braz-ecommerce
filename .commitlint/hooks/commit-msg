@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if ! type `pwd`/.commitlint/commitlint >/dev/null 2>/dev/null; then
+  echo "Error: commitlint could not be found"
+  echo "Try again after installing commitlint or add commitlint to PATH."
+  echo "Get more info about installation at: https://github.com/conventionalcommit/commitlint"
+  exit 2;
+fi
+
+`pwd`/.commitlint/commitlint lint --message $1
+
