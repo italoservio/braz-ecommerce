@@ -8,4 +8,3 @@ if ! type `pwd`/.commitlint/commitlint >/dev/null 2>/dev/null; then
 fi
 
 `pwd`/.commitlint/commitlint lint --message $1
-
