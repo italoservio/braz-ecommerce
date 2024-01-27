@@ -6,21 +6,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type HelloWorld struct {
-	Foo   string `json:"foo"`
-	Fizz  string `json:"fizz"`
-	Hello string `json:"hello"`
+type Healthcheck struct {
+	Server   string `json:"server"`
+	Database string `json:"database"`
 }
 
 func main() {
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-
-		return c.JSON(HelloWorld{
-			Foo:   "Bar",
-			Fizz:  "Buzz",
-			Hello: "World",
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(Healthcheck{
+			Server:   "ok",
+			Database: "n/a",
 		})
 	})
 
