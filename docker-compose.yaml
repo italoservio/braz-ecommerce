@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  user_microservice:
+    image: golang:1.21.6-bullseye
+    container_name: user_microservice
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports: ["3000:3000"]
+    volumes: [".:/app"]
+    working_dir: /app
+    command: bash -c 'export SERVICE_FOLDER=users && make local_docker_cmd'
+    
