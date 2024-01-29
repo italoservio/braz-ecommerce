@@ -13,8 +13,5 @@ services:
     ports: ["3000:3000"]
     volumes: [".:/app"]
     working_dir: /app
-    command: >
-      bash -c '
-      go install github.com/cosmtrek/air@latest
-      && air --build.cmd "go build -o tmp/users cmd/users/main.go" --build.bin "./tmp/users"'
+    command: bash -c 'export SERVICE_FOLDER=users && make local_docker_cmd'
     
