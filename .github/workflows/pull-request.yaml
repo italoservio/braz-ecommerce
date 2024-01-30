@@ -20,6 +20,7 @@ jobs:
 
           if [ -z "$TICKET_NUMBER" ]; then
             exit 1
+          fi
           
           echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
 
@@ -46,6 +47,7 @@ jobs:
           
           if [ -z "$FOUND_STR" ]; then
             exit 1
+          fi
 
       - name: Log Message on Failure
         if: ${{ failure() }}
