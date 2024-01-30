@@ -1,11 +1,48 @@
 name: Preflight Validation
 
-on: ["pull_request"]
+on:
+  pull_request:
+    branches:
+      - develop
 
 jobs:
-  validate-changelog:
+  Changelog:
+    name: Changelog
     runs-on: ubuntu-latest
     steps:
-      - name: Validate CHANGELOG file
-        run: >
-          echo "Hello world"
+      - name: Extract Ticket Number
+        id: ext_ticket_number
+        run: |
+          REGEXP=([BRAZ]+-[0-9]+)
+
+          TICKET_NUMBER=$(echo "$GITHUB_REF_NAME" | grep -oE "$REGEXP")
+
+          if [ -n "$TICKET_NUMBER" ]; then
+              echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
+              exit 0
+          else
+              echo "Error: Unable to find ticket number in branch name"
+              exit 1
+          fi
+          
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            CHANGELOG.md
+
+      - name: Validate CHANGELOG
+        id: validate_changelog
+        env:
+          TICKET_NUMBER: ${{ steps.ext_ticket_number.outputs.TICKET_NUMBER }}
+        run: |
+          FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
+
+          if [ -n "$FOUND_STR" ]; then
+              exit 0
+          else
+              echo "Error: Unable to find ticket number in CHANGELOG.md file"
+              exit 1
+          fi
