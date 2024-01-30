@@ -1,0 +1,11 @@
+name: Preflight Validation
+
+on: ["pull_request"]
+
+jobs:
+  validate-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate CHANGELOG file
+        run: >
+          echo "Hello world"
