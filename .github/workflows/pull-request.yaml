@@ -1,0 +1,49 @@
+name: Preflight Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  Changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Ticket Number
+        id: ext_ticket_number
+        shell: bash
+        run: |
+          set -x
+
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"        
+          REGEXP=([BRAZ]+-[0-9]+)
+          TICKET_NUMBER=$(echo "$HEAD_BRANCH" | grep -oE "$REGEXP")
+
+          if [ -z "$TICKET_NUMBER" ]; then
+            exit 1
+          fi
+
+          echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            CHANGELOG.md
+
+      - name: Validate CHANGELOG
+        id: validate_changelog
+        env:
+          TICKET_NUMBER: ${{ steps.ext_ticket_number.outputs.TICKET_NUMBER }}
+        shell: bash
+        run: |
+          set -x
+
+          FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
+
+          if [ -z "$FOUND_STR" ]; then
+            exit 1
+          fi
