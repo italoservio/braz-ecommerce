@@ -14,20 +14,20 @@ jobs:
         id: ext_ticket_number
         shell: bash
         run: |
-          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
-          echo "$HEAD_BRANCH"
-        
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"        
           REGEXP=([BRAZ]+-[0-9]+)
           TICKET_NUMBER=$(echo "$HEAD_BRANCH" | grep -oE "$REGEXP")
 
-          if [ -n "$TICKET_NUMBER" ]; then
-              echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
-              exit 0
-          else
-              echo "Error: Unable to find ticket number in branch name"
-              exit 1
-          fi
+          if [ -z "$TICKET_NUMBER" ]; then
+            exit 1
           
+          echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Log Message on Failure
+        if: ${{ failure() }}
+        run: >
+          echo "Error: Unable to find ticket number in branch name"
+
       - name: Checkout Code
         id: checkout_code
         uses: actions/checkout@v4
@@ -43,10 +43,11 @@ jobs:
         shell: bash
         run: |
           FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
+          
+          if [ -z "$FOUND_STR" ]; then
+            exit 1
 
-          if [ -n "$FOUND_STR" ]; then
-              exit 0
-          else
-              echo "Error: Unable to find ticket number in CHANGELOG.md file"
-              exit 1
-          fi
+      - name: Log Message on Failure
+        if: ${{ failure() }}
+        run: >
+          echo "Error: Unable to find ticket number in CHANGELOG.md file"
