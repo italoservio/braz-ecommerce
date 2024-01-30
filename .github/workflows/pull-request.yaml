@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Extract Ticket Number
         id: ext_ticket_number
+        shell: bash
         run: |
           REGEXP=([BRAZ]+-[0-9]+)
-
           TICKET_NUMBER=$(echo "$GITHUB_REF_NAME" | grep -oE "$REGEXP")
 
           if [ -n "$TICKET_NUMBER" ]; then
@@ -37,6 +37,7 @@ jobs:
         id: validate_changelog
         env:
           TICKET_NUMBER: ${{ steps.ext_ticket_number.outputs.TICKET_NUMBER }}
+        shell: bash
         run: |
           FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
 
