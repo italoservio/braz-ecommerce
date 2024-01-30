@@ -14,10 +14,11 @@ jobs:
         id: ext_ticket_number
         shell: bash
         run: |
-          echo "$GITHUB_REF"
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+          echo "$HEAD_BRANCH"
         
           REGEXP=([BRAZ]+-[0-9]+)
-          TICKET_NUMBER=$(echo "$GITHUB_REF" | grep -oE "$REGEXP")
+          TICKET_NUMBER=$(echo "$HEAD_BRANCH" | grep -oE "$REGEXP")
 
           if [ -n "$TICKET_NUMBER" ]; then
               echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
