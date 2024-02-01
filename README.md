@@ -15,3 +15,9 @@ The command above will start all microservices and infrastructure resources in d
 ```sh
 make stop
 ```
+
+### Running unit tests
+There's also a command to execute unit tests and can be easily invoked through make command:
+```sh
+make test
+```
