@@ -47,3 +47,32 @@ jobs:
           if [ -z "$FOUND_STR" ]; then
             exit 1
           fi
+  
+  UnitTests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        
+      - name: Setup Golang
+        id: setup_golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.21.6'
+    
+      - name: Run Unit Tests
+        id: run_unit_tests
+        shell: bash
+        run: |
+          set -x
+        
+          make test > coverage.txt
+          
+          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk '{print $NF}')
+          
+          if [ "$COVERAGE_PERCENTAGE" != "100.0%" ]; then
+            echo "Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
+            exit 1
+          fi
