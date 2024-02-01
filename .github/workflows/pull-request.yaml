@@ -49,12 +49,18 @@ jobs:
           fi
   
   UnitTests:
-    name: Unit tests
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         id: checkout_code
         uses: actions/checkout@v4
+        
+      - name: Setup Golang
+        id: setup_golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.21.6'
     
       - name: Run Unit Tests
         id: run_unit_tests
