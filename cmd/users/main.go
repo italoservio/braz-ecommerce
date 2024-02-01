@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/italoservio/braz_ecommerce/internal/http/controllers"
 	"github.com/italoservio/braz_ecommerce/packages/database"
 )
 
@@ -28,6 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	controllers.RoutesUsers(app)
 	app.Get("/health", healthcheck(db))
 
 	go func() {
