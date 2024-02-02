@@ -4,13 +4,16 @@ setup:
 
 start:
 	docker compose up --detach --renew-anon-volumes --build --wait
-	
+
 stop:
 	docker compose down
-	
+
 test:
+	go test ./...
+
+coverage:
 	@mkdir -p .coverage
-	@go test ./... -coverprofile=coverage.out > /dev/null
+	@go test ./... -coverprofile=coverage.out > /dev/null || true
 	@sed -i '/packages\/database\/setup\.go/d' coverage.out
 	@go tool cover -html=coverage.out -o coverage.html
 	@mv coverage.out .coverage

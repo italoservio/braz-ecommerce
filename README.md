@@ -19,5 +19,9 @@ make stop
 ### Running unit tests
 There's also a command to execute unit tests and can be easily invoked through make command:
 ```sh
+# running unit tests:
 make test
+
+# running unit tests with coverage report:
+make coverage
 ```
