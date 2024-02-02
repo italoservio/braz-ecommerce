@@ -216,3 +216,96 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 		assert.NotNil(t, err, "should return error")
 	})
 }
+
+func TestCrudRepository_UpdateById(t *testing.T) {
+	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+
+	rootMt.Run("should return nil when call database with success", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+		mockId := primitive.NewObjectID().Hex()
+
+		nestedMt.AddMockResponses(bson.D{
+			{Key: "ok", Value: 1},
+			{Key: "nModified", Value: 1},
+		})
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		err := crudRepository.UpdateById(
+			mockCollName,
+			mockId,
+			MockStructure{Foo: "bar", Id: mockId},
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Nil(t, err, "should not return error")
+	})
+
+	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+		mockId := primitive.NewObjectID().Hex()
+
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		err := crudRepository.UpdateById(
+			mockCollName,
+			mockId,
+			MockStructure{Foo: "bar", Id: mockId},
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, err, "should return database call error")
+	})
+
+	rootMt.Run("should return error when wrong object id is provided", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+		mockWrongId := "something_wrong"
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		err := crudRepository.UpdateById(
+			mockCollName,
+			mockWrongId,
+			MockStructure{Foo: "bar", Id: mockWrongId},
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, err, "should return object id error")
+	})
+
+	rootMt.Run("should return error when failed to parse struct to document", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+		mockId := primitive.NewObjectID().Hex()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		err := crudRepository.UpdateById(
+			mockCollName,
+			mockId,
+			"something_wrong",
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, err, "should return parse error")
+	})
+}
