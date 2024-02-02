@@ -9,12 +9,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/italoservio/braz_ecommerce/cmd/users/start"
 	"github.com/italoservio/braz_ecommerce/packages/database"
 )
 
 func main() {
 	app := fiber.New()
+
+	app.Use(logger.New())
 
 	env := start.NewEnv()
 

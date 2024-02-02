@@ -3,7 +3,7 @@ setup:
 	chmod +x `pwd`/.commitlint/commitlint
 
 start:
-	docker compose up --detach --renew-anon-volumes --build --wait
+	docker compose up --abort-on-container-exit --renew-anon-volumes --build
 
 stop:
 	docker compose down
@@ -23,6 +23,6 @@ coverage:
 
 local_docker_cmd:
 	go install github.com/cosmtrek/air@v1.49.0 \
-    && air \
+    && air -d \
 		--build.cmd "go build -o tmp/$(SERVICE_FOLDER) cmd/$(SERVICE_FOLDER)/main.go" \
 		--build.bin "./tmp/$(SERVICE_FOLDER)"

@@ -20,7 +20,11 @@ func NewUserControllerImpl(
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	response := uc.getUserByIdImpl.Do(id)
+	user, err := uc.getUserByIdImpl.Do(id)
+	if err != nil {
+		// todo: handle errors:
+		return c.JSON(map[string]string{"msg": err.Error()})
+	}
 
-	return c.JSON(map[string]string{"id": response})
+	return c.JSON(user)
 }

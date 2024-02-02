@@ -10,7 +10,7 @@ import (
 func InjectionsContainer(db *database.Database) *http.UserControllerImpl {
 	userRepositoryImpl := storage.NewUserRepositoryImpl(db)
 	crudRepositoryImpl := database.NewCrudRepository(db)
-	getUserByIdImpl := app.NewGetUserByIdImpl(userRepositoryImpl, crudRepositoryImpl)
+	getUserByIdImpl := app.NewGetUserByIdImpl(crudRepositoryImpl, userRepositoryImpl)
 	userControllerImpl := http.NewUserControllerImpl(getUserByIdImpl)
 
 	return userControllerImpl
