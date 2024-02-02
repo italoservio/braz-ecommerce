@@ -18,12 +18,18 @@ const (
 	CodeValidationFailed = "EVALIDATION"
 )
 
-func Http(content ...string) *HTTPException {
-	if len(content) == 0 {
+func Http(code string) *HTTPException {
+	codes := map[string]bool{
+		(CodeNotFound):         true,
+		(CodeDatabaseFailed):   true,
+		(CodeValidationFailed): true,
+	}
+
+	if !codes[code] {
 		return &HTTPException{ErrorMessage: "Invalid error code"}
 	}
 
-	return errorCodeToStruct(content[0])
+	return errorCodeToStruct(code)
 }
 
 func (h *HTTPException) Error() string {
@@ -41,7 +47,7 @@ func errorCodeToStruct(code string) *HTTPException {
 	case CodeDatabaseFailed:
 		response.StatusMessage = "Internal Server Error"
 		response.StatusCode = http.StatusInternalServerError
-		response.ErrorMessage = "Failed to communicated with database"
+		response.ErrorMessage = "Failed to communicate with database"
 	case CodeValidationFailed:
 		response.StatusMessage = "Bad Request"
 		response.StatusCode = http.StatusBadRequest

@@ -47,7 +47,7 @@ func TestCrudRepository_GetById(t *testing.T) {
 		err = decoder.Decode(&result)
 
 		assert.Nil(t, err, "should not return error")
-		assert.Equal(t, result.Foo, "bar", "should return the expected object by id")
+		assert.Equal(t, "bar", result.Foo, "should return the expected object by id")
 	})
 
 	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
@@ -171,7 +171,7 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 		}
 
 		assert.Nil(t, err, "should not return error")
-		assert.Equal(t, id, mockId, "should return the expected id")
+		assert.Equal(t, mockId, id, "should return the expected id")
 	})
 
 	rootMt.Run("should return error when failed to parse object id", func(nestedMt *mtest.T) {
