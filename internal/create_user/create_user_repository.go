@@ -2,17 +2,19 @@ package create_user
 
 import (
 	"github.com/italoservio/braz_ecommerce/packages/database"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type UserRepository struct{ database *database.Database }
-
-func NewUserRepository(db *database.Database) *UserRepository {
-	return &UserRepository{database: db}
+type UserRepository struct {
+	crudRepository database.CrudRepositoryInterface
+	database       *database.Database
 }
 
-type CrudRepositoryInterface interface {
-	CreateUserRepository(payload *DTOCreateUserReq) (*mongo.SingleResult, error)
+func NewUserRepository(db *database.Database, crud database.CrudRepositoryInterface) *UserRepository {
+	return &UserRepository{database: db, crudRepository: crud}
+}
+
+type CreateUserRepositoryInterface interface {
+	CreateUser(payload *DTOCreateUserReq) error
 }
 
 func (ur *UserRepository) CreateUser(payload *DTOCreateUserReq) error {

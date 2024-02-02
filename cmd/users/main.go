@@ -29,7 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	createUserRepo := create_user.NewUserRepository(db)
+	crudRepository := database.NewCrudRepository(db)
+	createUserRepo := create_user.NewUserRepository(db, crudRepository)
 	createUserService := create_user.NewUserService(createUserRepo)
 	createUserController := create_user.NewUserController(createUserService)
 

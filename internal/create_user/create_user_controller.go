@@ -2,9 +2,9 @@ package create_user
 
 import "github.com/gofiber/fiber/v2"
 
-type UserController struct{ createUserService *CreateUserService }
+type UserController struct{ createUserService CreateUserServiceInterface }
 
-func NewUserController(createUserService *CreateUserService) *UserController {
+func NewUserController(createUserService CreateUserServiceInterface) *UserController {
 	return &UserController{createUserService}
 }
 
