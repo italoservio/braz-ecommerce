@@ -1,4 +1,5 @@
 # New version
+* BRAZ-8: Get a single User Endpoint
 * BRAZ-23: Create a package to connect to the database
 * BRAZ-22: Add database into the docker compose
 * BRAZ-19: CICD "Hello World" template

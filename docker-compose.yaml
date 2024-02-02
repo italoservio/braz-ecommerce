@@ -36,6 +36,7 @@ services:
     ports: ["3000:3000"]
     volumes: [".:/app"]
     environment:
+      PORT: 3000
       DB_URI: "mongodb://root:root@braz_databases:27017/"
       DB_NAME: "users"
     working_dir: /app
