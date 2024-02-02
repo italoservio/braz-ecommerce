@@ -19,7 +19,7 @@ type CrudRepositoryInterface interface {
 	GetById(collection string, id string) (*mongo.SingleResult, error)
 	DeleteByIdDeleteById(collection string, id string) error
 	CreateOne(collection string, structure any) (string, error)
-	UpdateById(collection string, id string, structure any)
+	UpdateById(collection string, id string, structure any) error
 }
 
 func (cr *CrudRepository) GetById(
