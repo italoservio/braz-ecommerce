@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/italoservio/braz_ecommerce/internal/http/controllers"
+	"github.com/italoservio/braz_ecommerce/internal/create_user"
 	"github.com/italoservio/braz_ecommerce/packages/database"
 )
 
@@ -29,7 +29,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	controllers.RoutesUsers(app)
+	createUserRepo := create_user.NewUserRepository(db)
+	createUserService := create_user.NewUserService(createUserRepo)
+	createUserController := create_user.NewUserController(createUserService)
+
+	app.Post("/user", createUserController.CreateUser)
 	app.Get("/health", healthcheck(db))
 
 	go func() {

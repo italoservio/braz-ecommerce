@@ -1,4 +1,4 @@
-package dtos
+package create_user
 
 type GlobalHandlerResp struct {
 	Success bool   `json:"success"`
