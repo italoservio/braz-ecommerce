@@ -14,7 +14,10 @@ type GetUserByIdImpl struct {
 	userRepository storage.UserRepositoryInterface
 }
 
-func NewGetUserByIdImpl(ur storage.UserRepositoryInterface) *GetUserByIdImpl {
+func NewGetUserByIdImpl(
+	ur storage.UserRepositoryInterface,
+	cr database.CrudRepositoryInterface,
+) *GetUserByIdImpl {
 	return &GetUserByIdImpl{userRepository: ur}
 }
 

@@ -7,9 +7,10 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
 
-func InjectionsContainer(database *database.Database) *http.UserControllerImpl {
-	userRepositoryImpl := storage.NewUserRepositoryImpl(database)
-	getUserByIdImpl := app.NewGetUserByIdImpl(userRepositoryImpl)
+func InjectionsContainer(db *database.Database) *http.UserControllerImpl {
+	userRepositoryImpl := storage.NewUserRepositoryImpl(db)
+	crudRepositoryImpl := database.NewCrudRepository(db)
+	getUserByIdImpl := app.NewGetUserByIdImpl(userRepositoryImpl, crudRepositoryImpl)
 	userControllerImpl := http.NewUserControllerImpl(getUserByIdImpl)
 
 	return userControllerImpl
