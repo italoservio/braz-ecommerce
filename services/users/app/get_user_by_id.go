@@ -1,15 +1,9 @@
 package app
 
 import (
-	"errors"
-	"fmt"
-	"log/slog"
-
 	"github.com/italoservio/braz_ecommerce/packages/database"
-	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type GetUserByIdInterface interface {
@@ -37,17 +31,9 @@ func (gu *GetUserByIdImpl) Do(id string) (*NewGetUserByIdOutput, error) {
 
 	var output NewGetUserByIdOutput
 
-	res, err := gu.crudRepository.GetById(database.UsersCollection, id)
+	err := gu.crudRepository.GetById(database.UsersCollection, id, &output)
 	if err != nil {
 		return nil, err
-	}
-
-	if err := res.Decode(&output); err != nil {
-		if err == mongo.ErrNoDocuments {
-			slog.Error(fmt.Sprintf("Unable to find user with id '%s'", id))
-
-			return nil, errors.New(exception.CodeNotFound)
-		}
 	}
 
 	return &output, nil

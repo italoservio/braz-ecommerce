@@ -2,8 +2,11 @@ package database
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"time"
 
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +19,7 @@ func NewCrudRepository(db *Database) *CrudRepository {
 }
 
 type CrudRepositoryInterface interface {
-	GetById(collection string, id string) (*mongo.SingleResult, error)
+	GetById(collection string, id string, structure any) error
 	DeleteById(collection string, id string) error
 	CreateOne(collection string, structure any) (string, error)
 	UpdateById(collection string, id string, structure any) error
@@ -25,7 +28,8 @@ type CrudRepositoryInterface interface {
 func (cr *CrudRepository) GetById(
 	collection string,
 	id string,
-) (*mongo.SingleResult, error) {
+	structure any,
+) error {
 	coll := cr.database.Collection(collection)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -33,10 +37,20 @@ func (cr *CrudRepository) GetById(
 
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return errors.New(exception.CodeValidationFailed)
 	}
 
-	return coll.FindOne(ctx, bson.M{"_id": objectId}), nil
+	err = coll.FindOne(ctx, bson.M{"_id": objectId}).Decode(structure)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return errors.New(exception.CodeNotFound)
+		}
+
+		slog.Error(err.Error())
+		return errors.New(exception.CodeDatabaseFailed)
+	}
+
+	return nil
 }
 
 func (cr *CrudRepository) DeleteById(
