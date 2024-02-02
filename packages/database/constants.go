@@ -1,5 +1,5 @@
 package database
 
 const (
-	UserCollection = "users"
+	UsersCollection = "users"
 )

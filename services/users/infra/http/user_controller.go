@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 )
 
@@ -22,8 +23,8 @@ func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 
 	user, err := uc.getUserByIdImpl.Do(id)
 	if err != nil {
-		// todo: handle errors:
-		return c.JSON(map[string]string{"msg": err.Error()})
+		httpException := exception.Http(err.Error())
+		return c.Status(httpException.StatusCode).JSON(httpException)
 	}
 
 	return c.JSON(user)

@@ -17,8 +17,6 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use(logger.New())
-
 	env := start.NewEnv()
 
 	db, err := database.NewDatabase(env.DB_URI, env.DB_NAME)
@@ -31,6 +29,8 @@ func main() {
 	app.Get("/health", start.HealthCheckEndpoint(db))
 
 	api := app.Group("/api")
+	api.Use(logger.New(loggerConfig()))
+
 	usersV1 := api.Group("/v1/users")
 	usersV1.Get("/:id", userController.GetUserById)
 
@@ -49,4 +49,13 @@ func gracefulShutdown(app *fiber.App, db *database.Database) {
 
 	app.ShutdownWithContext(ctx)
 	db.Client().Disconnect(ctx)
+}
+
+func loggerConfig() logger.Config {
+	return logger.Config{
+		Format:        "${time} INFO ${method} ${path} ${status} ${latency}\n",
+		TimeFormat:    "2006/01/02 15:04:05",
+		TimeZone:      "America/Sao_Paulo",
+		DisableColors: true,
+	}
 }

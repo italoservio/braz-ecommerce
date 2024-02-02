@@ -23,6 +23,6 @@ coverage:
 
 local_docker_cmd:
 	go install github.com/cosmtrek/air@v1.49.0 \
-    && air -d \
+    && air \
 		--build.cmd "go build -o tmp/$(SERVICE_FOLDER) cmd/$(SERVICE_FOLDER)/main.go" \
 		--build.bin "./tmp/$(SERVICE_FOLDER)"
