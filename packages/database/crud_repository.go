@@ -19,6 +19,7 @@ func NewCrudRepository(db *Database) *CrudRepository {
 type CrudRepositoryInterface interface {
 	GetById(collName string, id string) (*mongo.SingleResult, error)
 	DeleteById(collName string, id string) (*mongo.DeleteResult, error)
+	CreateOne(collName string, structure any) (string, error)
 }
 
 func (cr *CrudRepository) GetById(collName string, id string) (*mongo.SingleResult, error) {
