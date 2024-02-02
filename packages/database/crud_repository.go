@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -50,4 +51,25 @@ func (cr *CrudRepository) DeleteById(collName string, id string) error {
 	}
 
 	return nil
+}
+
+func (cr *CrudRepository) CreateOne(collName string, structure any) (string, error) {
+	coll := cr.database.Collection(collName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	result, err := coll.InsertOne(ctx, structure)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(result.InsertedID)
+
+	oid, err := primitive.ObjectIDFromHex(result.InsertedID.(string))
+	if err != nil {
+		return "", err
+	}
+
+	return oid.Hex(), nil
 }

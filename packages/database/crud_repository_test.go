@@ -55,9 +55,7 @@ func TestCrudRepository_GetById(t *testing.T) {
 		mockCollName := "users"
 		mockId := primitive.NewObjectID()
 
-		nestedMt.AddMockResponses(bson.D{
-			{Key: "ok", Value: 0},
-		})
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
@@ -100,9 +98,7 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		mockCollName := "users"
 		mockId := primitive.NewObjectID()
 
-		nestedMt.AddMockResponses(bson.D{
-			{Key: "ok", Value: 1},
-		})
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 1}})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
@@ -121,9 +117,7 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		mockCollName := "users"
 		mockId := primitive.NewObjectID()
 
-		nestedMt.AddMockResponses(bson.D{
-			{Key: "ok", Value: 0},
-		})
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
@@ -151,5 +145,74 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		}
 
 		assert.NotNil(t, err, "should return object id error")
+	})
+}
+
+func TestCrudRepository_CreateOne(t *testing.T) {
+	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+
+	rootMt.Run("should return the inserted id when created with success", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+		mockId := primitive.NewObjectID().Hex()
+
+		nestedMt.AddMockResponses(mtest.CreateSuccessResponse())
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		id, err := crudRepository.CreateOne(
+			mockCollName,
+			MockStructure{Foo: "bar", Id: mockId},
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Nil(t, err, "should not return error")
+		assert.Equal(t, id, mockId, "should return the expected id")
+	})
+
+	rootMt.Run("should return error when failed to parse object id", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+
+		nestedMt.AddMockResponses(mtest.CreateSuccessResponse())
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		_, err := crudRepository.CreateOne(
+			mockCollName,
+			MockStructure{Foo: "bar"},
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, err, "should return error")
+	})
+
+	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
+		mockDbName := "foo"
+		mockCollName := "users"
+
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &Database{nestedMt.Client.Database(mockDbName)}
+		crudRepository := NewCrudRepository(mockDB)
+
+		_, err := crudRepository.CreateOne(
+			mockCollName,
+			MockStructure{Foo: "bar"},
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, err, "should return error")
 	})
 }
