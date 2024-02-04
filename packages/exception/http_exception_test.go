@@ -24,10 +24,10 @@ func TestException_Http(t *testing.T) {
 		fmt.Printf("%+v", structure)
 
 		assert.Equal(t, false, structure.Ok)
-		assert.Equal(t, "", structure.ErrorCode)
+		assert.Equal(t, "EINVALID", structure.ErrorCode)
 		assert.Equal(t, "Invalid error code", structure.ErrorMessage)
-		assert.Equal(t, 0, structure.StatusCode)
-		assert.Equal(t, "", structure.StatusMessage)
+		assert.Equal(t, 500, structure.StatusCode)
+		assert.Equal(t, "Internal Server Error", structure.StatusMessage)
 	})
 }
 

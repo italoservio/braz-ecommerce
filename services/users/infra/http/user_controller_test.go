@@ -34,7 +34,7 @@ func TestUserController_NewUserControllerImpl(t *testing.T) {
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
-		fbr := fiber.New()
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get("/api/v1/users/:id", userController.GetUserById)
 		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
 

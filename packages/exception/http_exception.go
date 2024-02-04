@@ -26,7 +26,12 @@ func Http(code string) *HTTPException {
 	}
 
 	if !codes[code] {
-		return &HTTPException{ErrorMessage: "Invalid error code"}
+		return &HTTPException{
+			ErrorCode:     "EINVALID",
+			ErrorMessage:  "Invalid error code",
+			StatusCode:    http.StatusInternalServerError,
+			StatusMessage: "Internal Server Error",
+		}
 	}
 
 	return errorCodeToStruct(code)

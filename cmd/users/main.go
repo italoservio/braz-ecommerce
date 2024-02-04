@@ -12,10 +12,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/italoservio/braz_ecommerce/cmd/users/start"
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 
 	env := start.NewEnv()
 
