@@ -21,7 +21,8 @@ func TestUtils_ParseDocument(t *testing.T) {
 
 		_, err := database.ParseToDocument(structure)
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Nil(t, err, "should not return error")
@@ -32,7 +33,8 @@ func TestUtils_ParseDocument(t *testing.T) {
 
 		_, err := database.ParseToDocument(wrongStructure)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return marshal error")

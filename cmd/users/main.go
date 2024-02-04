@@ -34,6 +34,7 @@ func main() {
 
 	usersV1 := api.Group("/v1/users")
 	usersV1.Get("/:id", userController.GetUserById)
+	usersV1.Delete("/:id", userController.DeleteUserById)
 
 	go func() { log.Fatal(app.Listen(env.PORT)) }()
 
