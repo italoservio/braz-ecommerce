@@ -9,42 +9,43 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/italoservio/braz_ecommerce/internal/create_user"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/italoservio/braz_ecommerce/cmd/users/start"
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 )
 
-type Healthcheck struct {
-	Server   string `json:"server"`
-	Database string `json:"database"`
-}
-
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 
-	dbUri := os.Getenv("DB_URI")
-	dbName := os.Getenv("DB_NAME")
+	env := start.NewEnv()
 
-	db, err := database.NewDatabase(dbUri, dbName)
+	db, err := database.NewDatabase(env.DB_URI, env.DB_NAME)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	crudRepository := database.NewCrudRepository(db)
-	createUserRepo := create_user.NewUserRepository(db, crudRepository)
-	createUserService := create_user.NewUserService(createUserRepo)
-	createUserController := create_user.NewUserController(createUserService)
+	userController := start.InjectionsContainer(db)
 
-	app.Post("/user", createUserController.CreateUser)
-	app.Get("/health", healthcheck(db))
+	app.Get("/health", start.HealthCheckEndpoint(db))
 
-	go func() {
-		log.Fatal(app.Listen(":3000"))
-	}()
+	api := app.Group("/api")
+	api.Use(logger.New(loggerConfig()))
+
+	usersV1 := api.Group("/v1/users")
+	usersV1.Get("/:id", userController.GetUserById)
+	usersV1.Delete("/:id", userController.DeleteUserById)
+
+	go func() { log.Fatal(app.Listen(env.PORT)) }()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
 
+	gracefulShutdown(app, db)
+}
+
+func gracefulShutdown(app *fiber.App, db *database.Database) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -52,22 +53,11 @@ func main() {
 	db.Client().Disconnect(ctx)
 }
 
-func healthcheck(db *database.Database) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-
-		healthCheck := Healthcheck{
-			Server:   "healthy",
-			Database: "healthy",
-		}
-
-		err := db.Client().Ping(ctx, nil)
-
-		if err != nil {
-			healthCheck.Database = "offline"
-		}
-
-		return c.JSON(healthCheck)
+func loggerConfig() logger.Config {
+	return logger.Config{
+		Format:        "${time} INFO ${method} ${path} ${status} ${latency}\n",
+		TimeFormat:    "2006/01/02 15:04:05",
+		TimeZone:      "America/Sao_Paulo",
+		DisableColors: true,
 	}
 }

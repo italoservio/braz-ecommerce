@@ -3,14 +3,17 @@ setup:
 	chmod +x `pwd`/.commitlint/commitlint
 
 start:
-	docker compose up --detach --renew-anon-volumes --build --wait
-	
+	docker compose up --abort-on-container-exit --renew-anon-volumes --build
+
 stop:
 	docker compose down
-	
+
 test:
+	go test ./...
+
+coverage:
 	@mkdir -p .coverage
-	@go test ./... -coverprofile=coverage.out > /dev/null
+	@go test ./... -coverprofile=coverage.out > /dev/null || true
 	@sed -i '/packages\/database\/setup\.go/d' coverage.out
 	@go tool cover -html=coverage.out -o coverage.html
 	@mv coverage.out .coverage
@@ -19,7 +22,7 @@ test:
 	@echo "Coverage HTML report can be found at: $(PWD)/.coverage/coverage.html"
 
 local_docker_cmd:
-	go install github.com/cosmtrek/air@latest \
+	go install github.com/cosmtrek/air@v1.49.0 \
     && air \
 		--build.cmd "go build -o tmp/$(SERVICE_FOLDER) cmd/$(SERVICE_FOLDER)/main.go" \
 		--build.bin "./tmp/$(SERVICE_FOLDER)"
