@@ -1,8 +1,9 @@
-package database
+package database_test
 
 import (
 	"testing"
 
+	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestUtils_ParseDocument(t *testing.T) {
 			Value: 42,
 		}
 
-		_, err := ParseToDocument(structure)
+		_, err := database.ParseToDocument(structure)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -29,7 +30,7 @@ func TestUtils_ParseDocument(t *testing.T) {
 	t.Run("should fail marshaling when inputted structure is invalid", func(t *testing.T) {
 		wrongStructure := ""
 
-		_, err := ParseToDocument(wrongStructure)
+		_, err := database.ParseToDocument(wrongStructure)
 		if err == nil {
 			t.Fatal(err)
 		}

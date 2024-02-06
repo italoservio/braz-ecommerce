@@ -29,13 +29,14 @@ services:
     healthcheck:
       test: |
         curl -f http://localhost:3000/health
-      interval: 5s
+      interval: 30s
       timeout: 5s
       retries: 10
       start_period: 10s
     ports: ["3000:3000"]
     volumes: [".:/app"]
     environment:
+      PORT: 3000
       DB_URI: "mongodb://root:root@braz_databases:27017/"
       DB_NAME: "users"
     working_dir: /app
