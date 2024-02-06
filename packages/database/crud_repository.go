@@ -97,14 +97,7 @@ func (cr *CrudRepository) CreateOne(
 		slog.Error(err.Error())
 		return "", errors.New(exception.CodeDatabaseFailed)
 	}
-
-	oid, err := primitive.ObjectIDFromHex(result.InsertedID.(string))
-	if err != nil {
-		slog.Error(err.Error())
-		return "", errors.New(exception.CodeValidationFailed)
-	}
-
-	return oid.Hex(), nil
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (cr *CrudRepository) UpdateById(

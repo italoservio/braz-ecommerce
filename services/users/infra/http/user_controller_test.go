@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
@@ -26,7 +27,8 @@ func TestUserController_GetUserById(t *testing.T) {
 
 		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl)
+		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
+		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
 
 		id := primitive.NewObjectID().Hex()
 		mockGetUserByIdImpl.
@@ -64,13 +66,14 @@ func TestUserController_GetUserById(t *testing.T) {
 
 		id := primitive.NewObjectID().Hex()
 		mockStruct := &app.NewGetUserByIdOutput{
-			User:        &domain.User{},
-			UserControl: &domain.UserControl{Id: id},
+			User:               &domain.User{},
+			DatabaseIdentifier: &database.DatabaseIdentifier{Id: id},
 		}
 
 		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl)
+		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
+		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
 
 		mockGetUserByIdImpl.EXPECT().
 			Do(id).
@@ -107,7 +110,8 @@ func TestUserController_DeleteUserById(t *testing.T) {
 
 		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl)
+		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
+		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
 
 		id := primitive.NewObjectID().Hex()
 		mockDeleteUserByIdImpl.
@@ -147,7 +151,8 @@ func TestUserController_DeleteUserById(t *testing.T) {
 
 		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl)
+		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
+		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
 
 		mockDeleteUserByIdImpl.EXPECT().
 			Do(id).

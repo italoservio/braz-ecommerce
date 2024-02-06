@@ -33,6 +33,7 @@ func main() {
 	api.Use(logger.New(loggerConfig()))
 
 	usersV1 := api.Group("/v1/users")
+	usersV1.Post("/", userController.CreateUser)
 	usersV1.Get("/:id", userController.GetUserById)
 	usersV1.Delete("/:id", userController.DeleteUserById)
 
