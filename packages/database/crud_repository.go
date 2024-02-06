@@ -37,6 +37,7 @@ func (cr *CrudRepository) GetById(
 
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
@@ -64,11 +65,19 @@ func (cr *CrudRepository) DeleteById(
 
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
 	}
 
-	if _, err := coll.DeleteOne(ctx, bson.M{"_id": objectId}); err != nil {
-		return err
+	_, err = coll.UpdateOne(
+		ctx,
+		bson.M{"_id": objectId},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "deleted_at", Value: time.Now()}}}},
+	)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return errors.New(exception.CodeDatabaseFailed)
 	}
 
 	return nil
@@ -85,12 +94,14 @@ func (cr *CrudRepository) CreateOne(
 
 	result, err := coll.InsertOne(ctx, structure)
 	if err != nil {
-		return "", err
+		slog.Error(err.Error())
+		return "", errors.New(exception.CodeDatabaseFailed)
 	}
 
 	oid, err := primitive.ObjectIDFromHex(result.InsertedID.(string))
 	if err != nil {
-		return "", err
+		slog.Error(err.Error())
+		return "", errors.New(exception.CodeValidationFailed)
 	}
 
 	return oid.Hex(), nil
@@ -108,18 +119,21 @@ func (cr *CrudRepository) UpdateById(
 
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
 	}
 
 	document, err := ParseToDocument(structure)
 	if err != nil {
-		return err
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
 	}
 
 	bson := bson.D{{Key: "$set", Value: document}}
 
 	if _, err := coll.UpdateByID(ctx, objectId, bson); err != nil {
-		return err
+		slog.Error(err.Error())
+		return errors.New(exception.CodeDatabaseFailed)
 	}
 
 	return nil

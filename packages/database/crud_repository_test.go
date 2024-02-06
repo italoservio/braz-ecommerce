@@ -43,7 +43,8 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		err := crudRepository.GetById(mockCollName, mockId.Hex(), &result)
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Nil(t, err, "should not return error")
@@ -70,7 +71,8 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		err := crudRepository.GetById(mockCollName, mockId.Hex(), &result)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Equal(t, exception.CodeNotFound, err.Error(), "should return the expected error")
@@ -91,7 +93,8 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		err := crudRepository.GetById(mockCollName, mockId.Hex(), &result)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Equal(t, exception.CodeDatabaseFailed, err.Error(), "should return database call error")
@@ -108,7 +111,8 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		err := crudRepository.GetById(mockCollName, mockWrongId, &mockStructure)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Equal(t, exception.CodeValidationFailed, err.Error(), "should return object id error")
@@ -123,7 +127,10 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		mockCollName := "users"
 		mockId := primitive.NewObjectID()
 
-		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 1}})
+		nestedMt.AddMockResponses(bson.D{
+			{Key: "ok", Value: 1},
+			{Key: "nModified", Value: 1},
+		})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(mockDbName)}
@@ -131,7 +138,8 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 
 		err := crudRepository.DeleteById(mockCollName, mockId.Hex())
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Nil(t, err, "should not return error")
@@ -142,7 +150,10 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		mockCollName := "users"
 		mockId := primitive.NewObjectID()
 
-		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
+		nestedMt.AddMockResponses(bson.D{
+			{Key: "ok", Value: 0},
+			{Key: "nModified", Value: 0},
+		})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(mockDbName)}
@@ -150,7 +161,8 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 
 		err := crudRepository.DeleteById(mockCollName, mockId.Hex())
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return database call error")
@@ -166,7 +178,8 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 
 		err := crudRepository.DeleteById(mockCollName, mockWrongId)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return object id error")
@@ -192,7 +205,8 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 			MockStructure{Foo: "bar", Id: mockId},
 		)
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Nil(t, err, "should not return error")
@@ -214,7 +228,8 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 			MockStructure{Foo: "bar"},
 		)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")
@@ -235,7 +250,8 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 			MockStructure{Foo: "bar"},
 		)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")
@@ -265,7 +281,8 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 			MockStructure{Foo: "bar", Id: mockId},
 		)
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.Nil(t, err, "should not return error")
@@ -288,7 +305,8 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 			MockStructure{Foo: "bar", Id: mockId},
 		)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return database call error")
@@ -308,7 +326,8 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 			MockStructure{Foo: "bar", Id: mockWrongId},
 		)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return object id error")
@@ -328,7 +347,8 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 			"something_wrong",
 		)
 		if err == nil {
-			t.Fatal(err)
+			t.Log(err.Error())
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return parse error")
