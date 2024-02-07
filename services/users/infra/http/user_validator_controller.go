@@ -19,16 +19,9 @@ type (
 	XValidator struct {
 		validator *validator.Validate
 	}
-
-	GlobalErrorHandlerResp struct {
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}
 )
 
-var validate = validator.New()
-
-func (v XValidator) Validate(data interface{}) []ErrorResponse {
+func (v XValidator) Validate(data any, validate *validator.Validate) []ErrorResponse {
 	validationErrors := []ErrorResponse{}
 
 	errs := validate.Struct(data)
@@ -50,11 +43,13 @@ func (v XValidator) Validate(data interface{}) []ErrorResponse {
 }
 
 func ValidationRequest(c *fiber.Ctx, payloadValidate interface{}) error {
+	validate := validator.New()
+
 	myValidator := &XValidator{
 		validator: validate,
 	}
 
-	if errs := myValidator.Validate(payloadValidate); len(errs) > 0 && errs[0].Error {
+	if errs := myValidator.Validate(payloadValidate, validate); len(errs) > 0 && errs[0].Error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 

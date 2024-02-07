@@ -1,14 +1,11 @@
 package app
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"encoding/hex"
-	"io"
+	"os"
 	"time"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	"github.com/italoservio/braz_ecommerce/packages/encryption"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
@@ -48,8 +45,12 @@ type CreateUserDatabase struct {
 }
 
 func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, error) {
+	secret := os.Getenv("ENC_SECRET")
+	encryptionData, err := encryption.Encrypt(secret, createUser.Password)
 
-	password, cipherKey := EncryptPassword(createUser.Password)
+	if err != nil {
+		return nil, err
+	}
 
 	id, err := gu.crudRepository.CreateOne(database.UsersCollection, &CreateUserDatabase{
 		User: domain.User{
@@ -60,8 +61,8 @@ func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, er
 			Addresses: []domain.UserAddress{},
 		},
 		UserPassword: domain.UserPassword{
-			Password:  password,
-			CipherKey: cipherKey,
+			Password:  encryptionData.EncryptedText,
+			CipherKey: encryptionData.Salt,
 		},
 		DatabaseTimestamp: database.DatabaseTimestamp{
 			CreatedAt: time.Now(),
@@ -75,28 +76,4 @@ func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, er
 	}
 
 	return &CreateUserOutput{DatabaseIdentifier: &database.DatabaseIdentifier{Id: id}}, nil
-}
-
-func EncryptPassword(plaintext string) (string, string) {
-
-	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	salt := make([]byte, 12)
-	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		panic(err.Error())
-	}
-
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	ciphertext := aesgcm.Seal(nil, salt, []byte(plaintext), nil)
-
-	return hex.EncodeToString(ciphertext), hex.EncodeToString(salt)
 }

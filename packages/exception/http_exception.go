@@ -16,6 +16,7 @@ const (
 	CodeNotFound         = "ENOTFOUND"
 	CodeDatabaseFailed   = "EDBFAILURE"
 	CodeValidationFailed = "EVALIDATION"
+	CodeInternal         = "EINTERNAL"
 )
 
 func Http(code string) *HTTPException {
@@ -57,6 +58,10 @@ func errorCodeToStruct(code string) *HTTPException {
 		response.StatusMessage = "Bad Request"
 		response.StatusCode = http.StatusBadRequest
 		response.ErrorMessage = "Invalid input for one or more required attributes"
+	case CodeInternal:
+		response.StatusMessage = "Internal Server Error"
+		response.StatusCode = http.StatusInternalServerError
+		response.ErrorMessage = "An expected error occurred and the server could not deal with it"
 	}
 
 	return &response
