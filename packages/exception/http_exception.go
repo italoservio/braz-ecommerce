@@ -13,17 +13,20 @@ type HTTPException struct {
 }
 
 const (
-	CodeNotFound         = "ENOTFOUND"
-	CodeDatabaseFailed   = "EDBFAILURE"
-	CodeValidationFailed = "EVALIDATION"
-	CodeInternal         = "EINTERNAL"
+	CodeNotFound             = "ENOTFOUND"
+	CodeDatabaseFailed       = "EDBFAILURE"
+	CodeValidationFailed     = "EVALIDATION"
+	CodeInternal             = "EINTERNAL"
+	CodeValidationBodyFailed = "EVALIDATIONBODYFAILED"
 )
 
 func Http(code string) *HTTPException {
 	codes := map[string]bool{
-		(CodeNotFound):         true,
-		(CodeDatabaseFailed):   true,
-		(CodeValidationFailed): true,
+		(CodeNotFound):             true,
+		(CodeDatabaseFailed):       true,
+		(CodeValidationFailed):     true,
+		(CodeInternal):             true,
+		(CodeValidationBodyFailed): true,
 	}
 
 	if !codes[code] {
@@ -62,6 +65,10 @@ func errorCodeToStruct(code string) *HTTPException {
 		response.StatusMessage = "Internal Server Error"
 		response.StatusCode = http.StatusInternalServerError
 		response.ErrorMessage = "An expected error occurred and the server could not deal with it"
+	case CodeValidationBodyFailed:
+		response.StatusMessage = "Body Error"
+		response.StatusCode = http.StatusBadRequest
+		response.ErrorMessage = "Invalid input for one or more required attributes"
 	}
 
 	return &response

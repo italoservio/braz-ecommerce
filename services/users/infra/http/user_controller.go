@@ -1,9 +1,11 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 )
 
@@ -34,14 +36,13 @@ func NewUserControllerImpl(
 }
 
 func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
-	body := CreateUserValidate{}
+	body := &app.CreateUserInput{}
 
 	if err := c.BodyParser(&body); err != nil {
-		return err
+		return errors.New(exception.CodeValidationBodyFailed)
 	}
-
 	if err := ValidationRequest(c, body); err != nil {
-		return err
+		return errors.New(exception.CodeValidationFailed)
 	}
 
 	output, err := uc.createUserImpl.Do(&app.CreateUserInput{

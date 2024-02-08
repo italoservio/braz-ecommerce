@@ -50,7 +50,7 @@ func ValidationRequest(c *fiber.Ctx, payloadValidate interface{}) error {
 	}
 
 	if errs := myValidator.Validate(payloadValidate, validate); len(errs) > 0 && errs[0].Error {
-		return errors.New(exception.CodeValidationFailed)
+		return errors.New(exception.CodeInternal)
 	}
 
 	return nil
