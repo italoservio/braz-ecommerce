@@ -1,4 +1,5 @@
 # New version
+* BRAZ-5: Create user Endpoint
 * BRAZ-7: Delete user by Id Endpoint
 * BRAZ-8: Get a single User Endpoint
 * BRAZ-23: Create a package to connect to the database
