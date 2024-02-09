@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -50,6 +51,7 @@ func ValidationRequest(c *fiber.Ctx, payloadValidate interface{}) error {
 	}
 
 	if errs := myValidator.Validate(payloadValidate, validate); len(errs) > 0 && errs[0].Error {
+		slog.Error("missing information in body")
 		return errors.New(exception.CodeInternal)
 	}
 

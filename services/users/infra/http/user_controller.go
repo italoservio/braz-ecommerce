@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -39,9 +40,11 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	body := &app.CreateUserInput{}
 
 	if err := c.BodyParser(&body); err != nil {
+		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationBodyFailed)
 	}
 	if err := ValidationRequest(c, body); err != nil {
+		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 

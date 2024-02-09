@@ -44,6 +44,7 @@ func (cr *CrudRepository) GetById(
 	err = coll.FindOne(ctx, bson.M{"_id": objectId}).Decode(structure)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			slog.Error(err.Error())
 			return errors.New(exception.CodeNotFound)
 		}
 
