@@ -33,11 +33,11 @@ type CreateUserOutput struct {
 }
 
 type CreateUserInput struct {
-	FirstName string `json:"first_name" validate:"required,min=5,max=20"`
-	LastName  string `json:"last_name" validate:"required,min=5,max=20"`
-	Email     string `json:"email" validate:"required,min=5,max=20"`
-	Type      string `json:"type" validate:"required,min=5,max=20"`
-	Password  string `json:"password" validate:"required,min=5,max=20"`
+	FirstName string `json:"first_name" validate:"required,min=1,max=100"`
+	LastName  string `json:"last_name" validate:"required,min=1,max=100"`
+	Email     string `json:"email" validate:"required,min=1,max=100"`
+	Type      string `json:"type" validate:"required,min=5,max=100"`
+	Password  string `json:"password" validate:"required,min=5,max=100"`
 }
 
 type CreateUserDatabase struct {

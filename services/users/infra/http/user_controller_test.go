@@ -214,7 +214,14 @@ func TestUserController_CreateUser(t *testing.T) {
 	})
 
 	t.Run("should mount the http exception when there is an error in ValidationRequest", func(t *testing.T) {
-		bodyReader := strings.NewReader(`{"Username": "12124", "Password": "testinasg", "Channel": "M"}`)
+
+		payload := &app.CreateUserInput{
+			FirstName: "username",
+			LastName:  "userlastname",
+		}
+
+		body, _ := json.Marshal(payload)
+		reader := strings.NewReader(string(body))
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -226,7 +233,7 @@ func TestUserController_CreateUser(t *testing.T) {
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Post("/api/v1/users/", userController.CreateUser)
-		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(bodyReader))
+		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -248,7 +255,15 @@ func TestUserController_CreateUser(t *testing.T) {
 	})
 
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
-		bodyReader := strings.NewReader(`{"first_name": "testinasg", "last_name": "testinasg", "email": "testinasg", "type": "testinasg", "password": "testinasg"}`)
+		payload := &app.CreateUserInput{
+			FirstName: "username",
+			LastName:  "userlastname",
+			Email:     "foobar@domain.com",
+			Type:      "admin",
+			Password:  "something",
+		}
+		body, _ := json.Marshal(payload)
+		reader := strings.NewReader(string(body))
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -266,7 +281,7 @@ func TestUserController_CreateUser(t *testing.T) {
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Post("/api/v1/users/", userController.CreateUser)
-		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(bodyReader))
+		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -288,7 +303,15 @@ func TestUserController_CreateUser(t *testing.T) {
 	})
 
 	t.Run("should return empty error when successfully executed on ValidationRequest and createUser", func(t *testing.T) {
-		bodyReader := strings.NewReader(`{"first_name": "testinasg", "last_name": "testinasg", "email": "testinasg", "type": "testinasg", "password": "testinasg"}`)
+		payload := &app.CreateUserInput{
+			FirstName: "username",
+			LastName:  "userlastname",
+			Email:     "foobar@domain.com",
+			Type:      "admin",
+			Password:  "something",
+		}
+		body, _ := json.Marshal(payload)
+		reader := strings.NewReader(string(body))
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -309,7 +332,7 @@ func TestUserController_CreateUser(t *testing.T) {
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Post("/api/v1/users/", userController.CreateUser)
-		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(bodyReader))
+		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
 		if err != nil {
