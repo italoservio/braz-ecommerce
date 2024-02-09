@@ -59,11 +59,4 @@ func TestException_errorCodeToStruct(t *testing.T) {
 		assert.Equal(t, structure.StatusCode, 500)
 		assert.Equal(t, structure.ErrorMessage, "An expected error occurred and the server could not deal with it")
 	})
-
-	t.Run("should parse error code EVALIDATIONBODYFAILED", func(t *testing.T) {
-		structure := errorCodeToStruct(CodeValidationBodyFailed)
-
-		assert.Equal(t, structure.StatusCode, 400)
-		assert.Equal(t, structure.ErrorMessage, "Invalid input for one or more required attributes")
-	})
 }

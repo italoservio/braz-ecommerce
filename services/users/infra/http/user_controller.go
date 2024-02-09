@@ -41,7 +41,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&body); err != nil {
 		slog.Error(err.Error())
-		return errors.New(exception.CodeValidationBodyFailed)
+		return errors.New(exception.CodeValidationFailed)
 	}
 	if err := ValidationRequest(c, body); err != nil {
 		slog.Error(err.Error())
