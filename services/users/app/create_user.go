@@ -1,11 +1,13 @@
 package app
 
 import (
+	"errors"
 	"os"
 	"time"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/encryption"
+	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
@@ -49,7 +51,7 @@ func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, er
 	encryptionData, err := encryption.Encrypt(secret, createUser.Password)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New(exception.CodeInternal)
 	}
 
 	id, err := gu.crudRepository.CreateOne(database.UsersCollection, &CreateUserDatabase{
