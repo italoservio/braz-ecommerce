@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/validation"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 )
 
@@ -43,7 +44,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
-	if err := ValidationRequest(c, body); err != nil {
+	if err := validation.ValidateRequest(c, body); err != nil {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
