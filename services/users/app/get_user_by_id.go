@@ -23,8 +23,9 @@ func NewGetUserByIdImpl(
 }
 
 type NewGetUserByIdOutput struct {
-	*domain.User        `bson:",inline"`
-	*domain.UserControl `bson:",inline"`
+	*database.DatabaseIdentifier `bson:",inline"`
+	*domain.User                 `bson:",inline"`
+	*database.DatabaseTimestamp  `bson:",inline"`
 }
 
 func (gu *GetUserByIdImpl) Do(id string) (*NewGetUserByIdOutput, error) {

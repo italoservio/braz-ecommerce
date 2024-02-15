@@ -39,6 +39,7 @@ services:
       PORT: 3000
       DB_URI: "mongodb://root:root@braz_databases:27017/"
       DB_NAME: "users"
+      ENC_SECRET: "2zmXvZa93wneR1w1L63i9cAUzSIzPdd6"
     working_dir: /app
     command: bash -c 'export SERVICE_FOLDER=users && make local_docker_cmd'
     

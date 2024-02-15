@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"github.com/italoservio/braz_ecommerce/packages/database"
+)
 
 type User struct {
 	Type      string        `json:"type" bson:"type"`
@@ -12,7 +14,7 @@ type User struct {
 
 type UserPassword struct {
 	Password  string `json:"password" bson:"password"`
-	cipherKey string `bson:"cipher_key"`
+	CipherKey string `bson:"cipher_key"`
 }
 
 type UserAddress struct {
@@ -25,15 +27,9 @@ type UserAddress struct {
 	Complement   *string `json:"complement" bson:"complement"`
 }
 
-type UserControl struct {
-	Id        string     `json:"id" bson:"_id"`
-	CreatedAt time.Time  `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at" bson:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at" bson:"deleted_at"`
-}
-
 type UserDatabase struct {
 	User
 	UserPassword
-	UserControl
+	database.DatabaseIdentifier
+	database.DatabaseTimestamp
 }
