@@ -61,6 +61,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ">=1.21.6"
+          
+      - name: Print
+        id: print
+        run: |
+          echo "Hello World"
 
       - name: Run Unit Tests
         id: run_unit_tests
