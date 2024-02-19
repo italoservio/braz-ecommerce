@@ -15,6 +15,9 @@ func TestException_Http(t *testing.T) {
 		assert.Equal(t, structure.ErrorMessage, "Entity not found")
 		assert.Equal(t, structure.StatusCode, 404)
 		assert.Equal(t, structure.StatusMessage, "Not Found")
+
+		err := structure.Error()
+		assert.Equal(t, err, "Entity not found")
 	})
 
 	t.Run("should parse invalid code to an empty http exception structure", func(t *testing.T) {
