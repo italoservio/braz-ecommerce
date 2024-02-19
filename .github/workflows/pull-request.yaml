@@ -62,6 +62,7 @@ jobs:
       - name: Run Unit Tests
         id: run_unit_tests
         run: |
+          go mod tidy
           make coverage > coverage.txt
           
           cat coverage.txt
