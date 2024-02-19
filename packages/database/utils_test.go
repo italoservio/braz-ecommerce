@@ -33,7 +33,6 @@ func TestUtils_ParseDocument(t *testing.T) {
 
 		_, err := database.ParseToDocument(wrongStructure)
 		if err == nil {
-			t.Log(err.Error())
 			t.Fail()
 		}
 
@@ -56,7 +55,6 @@ func TestUtils_ParseToDatabaseId(t *testing.T) {
 	t.Run("should fail when input is invalid", func(t *testing.T) {
 		objectIds, err := database.ParseToDatabaseId("invalid_id")
 		if err == nil {
-			t.Log(err.Error())
 			t.Fail()
 		}
 

@@ -48,7 +48,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 
 		_, err := getUserPaginatedImpl.Do(input)
 		if err == nil {
-			log.Fatal(err)
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")
@@ -133,7 +133,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 
 		_, err := getUserPaginatedImpl.Do(input)
 		if err == nil {
-			log.Fatal(err)
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")
