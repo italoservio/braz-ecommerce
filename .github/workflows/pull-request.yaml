@@ -12,10 +12,7 @@ jobs:
     steps:
       - name: Extract Ticket Number
         id: ext_ticket_number
-        shell: bash
         run: |
-          set -x
-
           HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"        
           REGEXP=([BRAZ]+-[0-9]+)
           TICKET_NUMBER=$(echo "$HEAD_BRANCH" | grep -oE "$REGEXP")
@@ -38,15 +35,15 @@ jobs:
         id: validate_changelog
         env:
           TICKET_NUMBER: ${{ steps.ext_ticket_number.outputs.TICKET_NUMBER }}
-        shell: bash
         run: |
-          set -x
-
           FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
 
           if [ -z "$FOUND_STR" ]; then
+            echo "🚨 Ticket number not found in CHANGELOG.md"
             exit 1
           fi
+
+          echo "✅ Cheers! Ticket number found in CHANGELOG.md!"
 
   UnitTests:
     name: Unit Tests
@@ -56,23 +53,35 @@ jobs:
         id: checkout_code
         uses: actions/checkout@v4
 
-      - name: Setup Golang
-        id: setup_golang
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.21.6"
+      - name: Start Golang container
+        id: start_golang_container
+        run: |
+          docker run -d \
+          --name golang \
+          -v ${{ github.workspace }}:/app \
+          -w /app \
+          golang:1.21.6-bullseye \
+          tail -f /dev/null
 
       - name: Run Unit Tests
         id: run_unit_tests
-        shell: bash
-        run: |
-          set -x
+        run: |          
+          cat <<< '
+          #!/bin/bash
 
           make coverage > coverage.txt
+          cat coverage.txt
 
-          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk '{print $NF}')
+          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk "{print \$NF}")
 
           if [ "$COVERAGE_PERCENTAGE" != "100.0%" ]; then
-            echo "Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
+            echo "🚨 Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
             exit 1
           fi
+
+          echo "✅ Cheers! Code coverage is 100%!"
+          ' > script.sh
+
+          chmod +x script.sh
+
+          docker exec golang /bin/bash -c "/app/script.sh"
