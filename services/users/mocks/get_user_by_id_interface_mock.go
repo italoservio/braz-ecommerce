@@ -42,10 +42,10 @@ func (m *MockGetUserByIdInterface) EXPECT() *MockGetUserByIdInterfaceMockRecorde
 }
 
 // Do mocks base method.
-func (m *MockGetUserByIdInterface) Do(id string) (*app.NewGetUserByIdOutput, error) {
+func (m *MockGetUserByIdInterface) Do(id string) (*app.GetUserByIdOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", id)
-	ret0, _ := ret[0].(*app.NewGetUserByIdOutput)
+	ret0, _ := ret[0].(*app.GetUserByIdOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
