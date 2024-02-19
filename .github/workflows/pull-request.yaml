@@ -42,7 +42,7 @@ jobs:
             echo "🚨 Ticket number not found in CHANGELOG.md"
             exit 1
           fi
-          
+
           echo "✅ Cheers! Ticket number found in CHANGELOG.md!"
 
   UnitTests:
@@ -53,25 +53,39 @@ jobs:
         id: checkout_code
         uses: actions/checkout@v4
 
-      - name: Setup Golang
-        id: setup_golang
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.21.6"
+      - name: Setup Docker
+        id: setup_docker
+        uses: actions/setup-docker@v2
+
+      - name: Start Golang container
+        id: start_golang_container
+        run: |
+          docker run -d \
+          --name golang \
+          -v ${{ github.workspace }}:/app \
+          -w /app \
+          golang:1.21.6-bullseye \
+          tail -f /dev/null
 
       - name: Run Unit Tests
         id: run_unit_tests
-        run: |
-          go mod tidy
+        run: |          
+          cat <<< '
+          #!/bin/bash
+
           make coverage > coverage.txt
-          
           cat coverage.txt
 
-          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk '{print $NF}')
+          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk "{print $NF}")
 
           if [ "$COVERAGE_PERCENTAGE" != "100.0%" ]; then
-            echo "🚨 Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
+            echo "Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
             exit 1
           fi
-          
-          echo "✅ Cheers! Code coverage is 100%!"
+
+          echo "Cheers! Code coverage is 100%!"
+          ' > script.sh
+
+          chmod +x script.sh
+
+          docker exec golang /bin/bash -c "/app/script.sh"
