@@ -7,7 +7,7 @@ import (
 )
 
 type GetUserByIdInterface interface {
-	Do(id string) (*NewGetUserByIdOutput, error)
+	Do(id string) (*GetUserByIdOutput, error)
 }
 
 type GetUserByIdImpl struct {
@@ -22,15 +22,12 @@ func NewGetUserByIdImpl(
 	return &GetUserByIdImpl{crudRepository: cr, userRepository: ur}
 }
 
-type NewGetUserByIdOutput struct {
-	*database.DatabaseIdentifier `bson:",inline"`
-	*domain.User                 `bson:",inline"`
-	*database.DatabaseTimestamp  `bson:",inline"`
+type GetUserByIdOutput struct {
+	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *GetUserByIdImpl) Do(id string) (*NewGetUserByIdOutput, error) {
-
-	var output NewGetUserByIdOutput
+func (gu *GetUserByIdImpl) Do(id string) (*GetUserByIdOutput, error) {
+	var output GetUserByIdOutput
 
 	err := gu.crudRepository.GetById(database.UsersCollection, id, &output)
 	if err != nil {

@@ -28,8 +28,14 @@ type UserAddress struct {
 }
 
 type UserDatabase struct {
-	User
-	UserPassword
-	database.DatabaseIdentifier
-	database.DatabaseTimestamp
+	*database.DatabaseIdentifier `bson:",inline"`
+	*User                        `bson:",inline"`
+	*UserPassword                `bson:",inline"`
+	*database.DatabaseTimestamp  `bson:",inline"`
+}
+
+type UserDatabaseNoPassword struct {
+	*database.DatabaseIdentifier `bson:",inline"`
+	*User                        `bson:",inline"`
+	*database.DatabaseTimestamp  `bson:",inline"`
 }
