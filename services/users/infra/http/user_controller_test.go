@@ -343,10 +343,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", getUserPaginatedEndpoint, nil)
-		q := req.URL.Query()
-		q.Add("page", "ABCD")
-		req.URL.RawQuery = q.Encode()
+		req := httptest.NewRequest("GET", "/api/v1/users?page=ABCD", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -372,7 +369,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 	t.Run("should mount the http exception when there is an error validating query params", func(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
-		req := httptest.NewRequest("GET", getUserPaginatedEndpoint, nil)
+		req := httptest.NewRequest("GET", "/api/v1/users", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -403,11 +400,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", getUserPaginatedEndpoint, nil)
-		q := req.URL.Query()
-		q.Add("page", "1")
-		q.Add("per_page", "10")
-		req.URL.RawQuery = q.Encode()
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -448,11 +441,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", getUserPaginatedEndpoint, nil)
-		q := req.URL.Query()
-		q.Add("page", "1")
-		q.Add("per_page", "10")
-		req.URL.RawQuery = q.Encode()
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {

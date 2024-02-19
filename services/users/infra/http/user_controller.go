@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -101,11 +102,15 @@ type GetUserPaginatedPayload struct {
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 	queryParams := GetUserPaginatedPayload{}
 
+	fmt.Println(c.Params("page"))
+
 	err := c.QueryParser(&queryParams)
 	if err != nil {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
+
+	fmt.Println(queryParams)
 
 	if err := validation.ValidateRequest(c, queryParams); err != nil {
 		slog.Error(err.Error())

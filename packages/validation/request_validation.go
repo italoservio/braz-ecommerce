@@ -2,6 +2,7 @@ package validation
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,8 @@ func ValidateRequest(c *fiber.Ctx, payload any) error {
 	errs := validate.Struct(payload)
 	if errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
+			slog.Error(err.Error())
+
 			validationErrors = append(validationErrors, ErrorResponse{
 				Error:       true,
 				FailedField: err.Field(),
