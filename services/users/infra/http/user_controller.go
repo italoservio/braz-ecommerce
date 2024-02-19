@@ -11,30 +11,33 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 )
 
-type CreateUserValidate struct {
-	FirstName string `json:"first_name" validate:"required,min=5,max=20"`
-	LastName  string `json:"last_name" validate:"required,min=5,max=20"`
-	Email     string `json:"email" validate:"required,min=5,max=20"`
-	Type      string `json:"type" validate:"required,min=5,max=20"`
-	Password  string `json:"password" validate:"required,min=5,max=20"`
-}
-
 type UserControllerImpl struct {
-	getUserByIdImpl    app.GetUserByIdInterface
-	deleteUserByIdImpl app.DeleteUserByIdInterface
-	createUserImpl     app.CreateUserInterface
+	getUserByIdImpl      app.GetUserByIdInterface
+	deleteUserByIdImpl   app.DeleteUserByIdInterface
+	createUserImpl       app.CreateUserInterface
+	getUserPaginatedImpl app.GetUserPaginatedInterface
 }
 
 func NewUserControllerImpl(
 	getUserByIdImpl app.GetUserByIdInterface,
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
+	getUserPaginatedImpl app.GetUserPaginatedInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
-		getUserByIdImpl:    getUserByIdImpl,
-		deleteUserByIdImpl: deleteUserByIdImpl,
-		createUserImpl:     createUserImpl,
+		getUserByIdImpl:      getUserByIdImpl,
+		deleteUserByIdImpl:   deleteUserByIdImpl,
+		createUserImpl:       createUserImpl,
+		getUserPaginatedImpl: getUserPaginatedImpl,
 	}
+}
+
+type CreateUserPayload struct {
+	FirstName string `json:"first_name" validate:"required,min=5,max=20"`
+	LastName  string `json:"last_name" validate:"required,min=5,max=20"`
+	Email     string `json:"email" validate:"required,min=5,max=20"`
+	Type      string `json:"type" validate:"required,min=5,max=20"`
+	Password  string `json:"password" validate:"required,min=5,max=20"`
 }
 
 func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
@@ -44,6 +47,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
+
 	if err := validation.ValidateRequest(c, body); err != nil {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
@@ -85,4 +89,38 @@ func (uc *UserControllerImpl) DeleteUserById(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusNoContent)
+}
+
+type GetUserPaginatedPayload struct {
+	Page    int      `query:"page" validate:"required,number,gt=0"`
+	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
+	Emails  []string `query:"email" validate:"omitempty,dive,email"`
+	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
+}
+
+func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
+	queryParams := GetUserPaginatedPayload{}
+
+	err := c.QueryParser(&queryParams)
+	if err != nil {
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	if err := validation.ValidateRequest(c, queryParams); err != nil {
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	output, err := uc.getUserPaginatedImpl.Do(&app.GetUserPaginatedInput{
+		Page:    queryParams.Page,
+		PerPage: queryParams.PerPage,
+		Emails:  queryParams.Emails,
+		Ids:     queryParams.Ids,
+	})
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(output)
 }

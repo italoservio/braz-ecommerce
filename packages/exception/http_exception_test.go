@@ -1,7 +1,6 @@
 package exception
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,8 +19,6 @@ func TestException_Http(t *testing.T) {
 
 	t.Run("should parse invalid code to an empty http exception structure", func(t *testing.T) {
 		structure := Http("")
-
-		fmt.Printf("%+v", structure)
 
 		assert.Equal(t, false, structure.Ok)
 		assert.Equal(t, "EINVALID", structure.ErrorCode)
