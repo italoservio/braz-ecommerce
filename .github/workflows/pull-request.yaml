@@ -53,10 +53,6 @@ jobs:
         id: checkout_code
         uses: actions/checkout@v4
 
-      - name: Setup Docker
-        id: setup_docker
-        uses: actions/setup-docker@v2
-
       - name: Start Golang container
         id: start_golang_container
         run: |
