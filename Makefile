@@ -1,6 +1,7 @@
 setup:
 	git config --local core.hooksPath .commitlint/hooks
 	chmod +x `pwd`/.commitlint/commitlint
+	go install go.uber.org/mock/mockgen@latest
 
 start:
 	docker compose up --abort-on-container-exit --renew-anon-volumes --build

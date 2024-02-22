@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,15 +42,15 @@ func (m *MockDeleteUserByIdInterface) EXPECT() *MockDeleteUserByIdInterfaceMockR
 }
 
 // Do mocks base method.
-func (m *MockDeleteUserByIdInterface) Do(id string) error {
+func (m *MockDeleteUserByIdInterface) Do(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", id)
+	ret := m.ctrl.Call(m, "Do", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockDeleteUserByIdInterfaceMockRecorder) Do(id any) *gomock.Call {
+func (mr *MockDeleteUserByIdInterfaceMockRecorder) Do(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockDeleteUserByIdInterface)(nil).Do), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockDeleteUserByIdInterface)(nil).Do), ctx, id)
 }

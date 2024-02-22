@@ -9,10 +9,13 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	fbrlogger "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/google/uuid"
 	"github.com/italoservio/braz_ecommerce/cmd/users/start"
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 )
 
 func main() {
@@ -30,7 +33,14 @@ func main() {
 	app.Get("/health", start.HealthCheckEndpoint(db))
 
 	api := app.Group("/api")
-	api.Use(logger.New(loggerConfig()))
+	api.Use(fbrlogger.New(loggerConfig()))
+	api.Use(requestid.New(requestid.Config{
+		Header:     string(logger.CorrelationId),
+		ContextKey: string(logger.CorrelationId),
+		Generator: func() string {
+			return uuid.New().String()
+		},
+	}))
 
 	usersV1 := api.Group("/v1/users")
 	usersV1.Post("/", userController.CreateUser)
@@ -55,11 +65,10 @@ func gracefulShutdown(app *fiber.App, db *database.Database) {
 	db.Client().Disconnect(ctx)
 }
 
-func loggerConfig() logger.Config {
-	return logger.Config{
-		Format:        "${time} INFO ${method} ${path} ${status} ${latency}\n",
+func loggerConfig() fbrlogger.Config {
+	return fbrlogger.Config{
+		Format:        "${time} INFO ${locals:X-Correlation-ID} ${method} ${path} ${status} ${latency}\n",
 		TimeFormat:    "2006/01/02 15:04:05",
-		TimeZone:      "America/Sao_Paulo",
 		DisableColors: true,
 	}
 }

@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,74 +42,74 @@ func (m *MockCrudRepositoryInterface) EXPECT() *MockCrudRepositoryInterfaceMockR
 }
 
 // CreateOne mocks base method.
-func (m *MockCrudRepositoryInterface) CreateOne(collection string, structure any) (string, error) {
+func (m *MockCrudRepositoryInterface) CreateOne(ctx context.Context, collection string, structure any) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOne", collection, structure)
+	ret := m.ctrl.Call(m, "CreateOne", ctx, collection, structure)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateOne indicates an expected call of CreateOne.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) CreateOne(collection, structure any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) CreateOne(ctx, collection, structure any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOne", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).CreateOne), collection, structure)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOne", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).CreateOne), ctx, collection, structure)
 }
 
 // DeleteById mocks base method.
-func (m *MockCrudRepositoryInterface) DeleteById(collection, id string) error {
+func (m *MockCrudRepositoryInterface) DeleteById(ctx context.Context, collection, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteById", collection, id)
+	ret := m.ctrl.Call(m, "DeleteById", ctx, collection, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteById indicates an expected call of DeleteById.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) DeleteById(collection, id any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) DeleteById(ctx, collection, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).DeleteById), collection, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).DeleteById), ctx, collection, id)
 }
 
 // GetById mocks base method.
-func (m *MockCrudRepositoryInterface) GetById(collection, id string, structure any) error {
+func (m *MockCrudRepositoryInterface) GetById(ctx context.Context, collection, id string, structure any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", collection, id, structure)
+	ret := m.ctrl.Call(m, "GetById", ctx, collection, id, structure)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) GetById(collection, id, structure any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) GetById(ctx, collection, id, structure any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetById), collection, id, structure)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetById), ctx, collection, id, structure)
 }
 
 // GetPaginated mocks base method.
-func (m *MockCrudRepositoryInterface) GetPaginated(collection string, page, perPage int, filters map[string]any, projections, sortings map[string]int, structures any) error {
+func (m *MockCrudRepositoryInterface) GetPaginated(ctx context.Context, collection string, page, perPage int, filters map[string]any, projections, sortings map[string]int, structures any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPaginated", collection, page, perPage, filters, projections, sortings, structures)
+	ret := m.ctrl.Call(m, "GetPaginated", ctx, collection, page, perPage, filters, projections, sortings, structures)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // GetPaginated indicates an expected call of GetPaginated.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) GetPaginated(collection, page, perPage, filters, projections, sortings, structures any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) GetPaginated(ctx, collection, page, perPage, filters, projections, sortings, structures any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaginated", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetPaginated), collection, page, perPage, filters, projections, sortings, structures)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaginated", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetPaginated), ctx, collection, page, perPage, filters, projections, sortings, structures)
 }
 
 // UpdateById mocks base method.
-func (m *MockCrudRepositoryInterface) UpdateById(collection, id string, structure any) error {
+func (m *MockCrudRepositoryInterface) UpdateById(ctx context.Context, collection, id string, structure any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateById", collection, id, structure)
+	ret := m.ctrl.Call(m, "UpdateById", ctx, collection, id, structure)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateById indicates an expected call of UpdateById.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) UpdateById(collection, id, structure any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) UpdateById(ctx, collection, id, structure any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).UpdateById), collection, id, structure)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).UpdateById), ctx, collection, id, structure)
 }
 
 // MockPaginatedOutput is a mock of PaginatedOutput interface.

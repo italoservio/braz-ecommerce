@@ -1,43 +1,62 @@
 package encryption
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"io"
-	"log/slog"
 
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 )
+
+type EncryptionInterface interface {
+	Encrypt(
+		ctx context.Context,
+		secret string,
+		text string,
+	) (*EncryptedText, error)
+}
+
+type EncryptionImpl struct {
+	logger logger.LoggerInterface
+}
+
+func NewEncryptionImpl(lg logger.LoggerInterface) *EncryptionImpl {
+	return &EncryptionImpl{
+		logger: lg,
+	}
+}
 
 type EncryptedText struct {
 	EncryptedText string
 	Salt          string
 }
 
-func Encrypt(secret string, text string) (*EncryptedText, error) {
+func (e *EncryptionImpl) Encrypt(ctx context.Context, secret string, text string) (*EncryptedText, error) {
 	if secret == "" || text == "" {
-		slog.Error("secret or text is empty")
+		e.logger.WithCtx(ctx).Error("secret or text is empty")
 		return nil, errors.New(exception.CodeValidationFailed)
 	}
 
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
-		slog.Error(err.Error())
+		e.logger.WithCtx(ctx).Error(err.Error())
 		return nil, errors.New(exception.CodeInternal)
 	}
 
 	salt := make([]byte, 12)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		slog.Error(err.Error())
+		e.logger.WithCtx(ctx).Error(err.Error())
 		return nil, errors.New(exception.CodeInternal)
 	}
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
-		slog.Error(err.Error())
+		e.logger.WithCtx(ctx).Error(err.Error())
 		return nil, errors.New(exception.CodeInternal)
 	}
 

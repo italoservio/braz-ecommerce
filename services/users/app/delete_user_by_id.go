@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
+
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
 
 type DeleteUserByIdInterface interface {
-	Do(id string) error
+	Do(ctx context.Context, id string) error
 }
 
 type DeleteUserByIdImpl struct {
@@ -21,8 +23,8 @@ func NewDeleteUserByIdImpl(
 	return &DeleteUserByIdImpl{crudRepository: cr, userRepository: ur}
 }
 
-func (gu *DeleteUserByIdImpl) Do(id string) error {
-	err := gu.crudRepository.DeleteById(database.UsersCollection, id)
+func (gu *DeleteUserByIdImpl) Do(ctx context.Context, id string) error {
+	err := gu.crudRepository.DeleteById(ctx, database.UsersCollection, id)
 	if err != nil {
 		return err
 	}
