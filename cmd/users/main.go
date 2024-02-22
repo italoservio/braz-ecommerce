@@ -36,6 +36,7 @@ func main() {
 	usersV1.Post("/", userController.CreateUser)
 	usersV1.Get("/:id", userController.GetUserById)
 	usersV1.Delete("/:id", userController.DeleteUserById)
+	usersV1.Patch("/:id", userController.UpdateUser)
 
 	go func() { log.Fatal(app.Listen(env.PORT)) }()
 

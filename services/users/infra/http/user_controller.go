@@ -23,17 +23,20 @@ type UserControllerImpl struct {
 	getUserByIdImpl    app.GetUserByIdInterface
 	deleteUserByIdImpl app.DeleteUserByIdInterface
 	createUserImpl     app.CreateUserInterface
+	updateUserImpl     app.UpdateUserInterface
 }
 
 func NewUserControllerImpl(
 	getUserByIdImpl app.GetUserByIdInterface,
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
+	updateUserImpl app.UpdateUserInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
 		getUserByIdImpl:    getUserByIdImpl,
 		deleteUserByIdImpl: deleteUserByIdImpl,
 		createUserImpl:     createUserImpl,
+		updateUserImpl:     updateUserImpl,
 	}
 }
 
@@ -44,6 +47,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
+
 	if err := validation.ValidateRequest(c, body); err != nil {
 		slog.Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
@@ -62,6 +66,43 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(output)
+}
+
+func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
+
+	body := &app.UpdateUserInput{}
+
+	if err := c.BodyParser(&body); err != nil {
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	if err := validation.ValidateRequest(c, c.BodyParser(&body)); err != nil {
+		slog.Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+	// id := c.Params("id")
+
+	// user, err := uc.getUserByIdImpl.Do(id)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// updateUser, err := uc.updateUserImpl.Do(&app.UpdateUserInput{
+	// 	Id:        body.Id,
+	// 	FirstName: body.FirstName,
+	// 	LastName:  body.LastName,
+	// 	Email:     body.Email,
+	// 	Type:      body.Type,
+	// 	Password:  body.Password,
+	// 	Addresses: body.Addresses,
+	// }, user)
+
+	// if err != nil {
+	// 	return err
+	// }
+
+	return c.JSON(nil)
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
