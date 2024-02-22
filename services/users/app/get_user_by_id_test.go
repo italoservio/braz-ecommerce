@@ -38,7 +38,7 @@ func TestGetUserById_Do(t *testing.T) {
 
 		_, err := getUserByIdImpl.Do(id)
 		if err == nil {
-			log.Fatal(err)
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")

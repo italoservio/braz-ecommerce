@@ -21,25 +21,54 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+type TestingDependencies struct {
+	ctrl                     *gomock.Controller
+	mockGetUserByIdImpl      *mocks.MockGetUserByIdInterface
+	mockDeleteUserByIdImpl   *mocks.MockDeleteUserByIdInterface
+	mockCreateUserImpl       *mocks.MockCreateUserInterface
+	mockGetUserPaginatedImpl *mocks.MockGetUserPaginatedInterface
+	userController           *http.UserControllerImpl
+}
+
+func BeforeEach(t *testing.T) *TestingDependencies {
+	ctrl := gomock.NewController(t)
+
+	mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
+	mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
+	mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
+	mockGetUserPaginatedImpl := mocks.NewMockGetUserPaginatedInterface(ctrl)
+
+	userController := http.NewUserControllerImpl(
+		mockGetUserByIdImpl,
+		mockDeleteUserByIdImpl,
+		mockCreateUserImpl,
+		mockGetUserPaginatedImpl,
+	)
+
+	return &TestingDependencies{
+		ctrl:                     ctrl,
+		mockGetUserByIdImpl:      mockGetUserByIdImpl,
+		mockDeleteUserByIdImpl:   mockDeleteUserByIdImpl,
+		mockCreateUserImpl:       mockCreateUserImpl,
+		mockGetUserPaginatedImpl: mockGetUserPaginatedImpl,
+		userController:           userController,
+	}
+}
+
 func TestUserController_GetUserById(t *testing.T) {
+	deps := BeforeEach(t)
+	defer deps.ctrl.Finish()
+
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
 		id := primitive.NewObjectID().Hex()
-		mockGetUserByIdImpl.
+		deps.mockGetUserByIdImpl.
 			EXPECT().
 			Do(id).
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Get("/api/v1/users/:id", userController.GetUserById)
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
 		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
 
 		response, err := fbr.Test(req, -1)
@@ -62,27 +91,20 @@ func TestUserController_GetUserById(t *testing.T) {
 	})
 
 	t.Run("should return user struct when received from app", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
 		id := primitive.NewObjectID().Hex()
-		mockStruct := &app.NewGetUserByIdOutput{
-			User:               &domain.User{},
-			DatabaseIdentifier: &database.DatabaseIdentifier{Id: id},
+		mockStruct := &app.GetUserByIdOutput{
+			UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
+				DatabaseIdentifier: &database.DatabaseIdentifier{Id: id},
+			},
 		}
 
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
-		mockGetUserByIdImpl.EXPECT().
+		deps.mockGetUserByIdImpl.EXPECT().
 			Do(id).
 			Times(1).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New()
-		fbr.Get("/api/v1/users/:id", userController.GetUserById)
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
 		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
 
 		response, err := fbr.Test(req, -1)
@@ -97,7 +119,7 @@ func TestUserController_GetUserById(t *testing.T) {
 			t.Fail()
 		}
 
-		var httpResponse app.NewGetUserByIdOutput
+		var httpResponse app.GetUserByIdOutput
 		json.Unmarshal(bytes, &httpResponse)
 
 		assert.Equal(t, id, httpResponse.Id, "should return expected response")
@@ -105,24 +127,19 @@ func TestUserController_GetUserById(t *testing.T) {
 }
 
 func TestUserController_DeleteUserById(t *testing.T) {
+	deps := BeforeEach(t)
+	defer deps.ctrl.Finish()
+
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
 		id := primitive.NewObjectID().Hex()
-		mockDeleteUserByIdImpl.
+		deps.mockDeleteUserByIdImpl.
 			EXPECT().
 			Do(id).
 			Times(1).
 			Return(errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Delete("/api/v1/users/:id", userController.DeleteUserById)
+		fbr.Delete("/api/v1/users/:id", deps.userController.DeleteUserById)
 		req := httptest.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%s", id), nil)
 
 		response, err := fbr.Test(req, -1)
@@ -145,23 +162,15 @@ func TestUserController_DeleteUserById(t *testing.T) {
 	})
 
 	t.Run("should not return error when error returned from the app is nil", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
 		id := primitive.NewObjectID().Hex()
 
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
-		mockDeleteUserByIdImpl.EXPECT().
+		deps.mockDeleteUserByIdImpl.EXPECT().
 			Do(id).
 			Times(1).
 			Return(nil)
 
 		fbr := fiber.New()
-		fbr.Delete("/api/v1/users/:id", userController.DeleteUserById)
+		fbr.Delete("/api/v1/users/:id", deps.userController.DeleteUserById)
 		req := httptest.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%s", id), nil)
 
 		response, err := fbr.Test(req, -1)
@@ -181,17 +190,12 @@ func TestUserController_DeleteUserById(t *testing.T) {
 }
 
 func TestUserController_CreateUser(t *testing.T) {
+	deps := BeforeEach(t)
+	defer deps.ctrl.Finish()
+
 	t.Run("should mount the http exception when there is an error in BodyParser", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Post("/api/v1/users/", userController.CreateUser)
+		fbr.Post("/api/v1/users/", deps.userController.CreateUser)
 		req := httptest.NewRequest("POST", "/api/v1/users/", nil)
 
 		response, err := fbr.Test(req, -1)
@@ -223,16 +227,8 @@ func TestUserController_CreateUser(t *testing.T) {
 		body, _ := json.Marshal(payload)
 		reader := strings.NewReader(string(body))
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Post("/api/v1/users/", userController.CreateUser)
+		fbr.Post("/api/v1/users/", deps.userController.CreateUser)
 		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
@@ -265,22 +261,14 @@ func TestUserController_CreateUser(t *testing.T) {
 		body, _ := json.Marshal(payload)
 		reader := strings.NewReader(string(body))
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
-		mockCreateUserImpl.
+		deps.mockCreateUserImpl.
 			EXPECT().
 			Do(gomock.Any()).
 			Times(1).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Post("/api/v1/users/", userController.CreateUser)
+		fbr.Post("/api/v1/users/", deps.userController.CreateUser)
 		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
@@ -313,25 +301,17 @@ func TestUserController_CreateUser(t *testing.T) {
 		body, _ := json.Marshal(payload)
 		reader := strings.NewReader(string(body))
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
 		mockStruct := &app.CreateUserOutput{
 			DatabaseIdentifier: &database.DatabaseIdentifier{Id: "123"},
 		}
 
-		mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
-		mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
-		mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
-		userController := http.NewUserControllerImpl(mockGetUserByIdImpl, mockDeleteUserByIdImpl, mockCreateUserImpl)
-
-		mockCreateUserImpl.EXPECT().
+		deps.mockCreateUserImpl.EXPECT().
 			Do(gomock.Any()).
 			Times(1).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Post("/api/v1/users/", userController.CreateUser)
+		fbr.Post("/api/v1/users/", deps.userController.CreateUser)
 		req := httptest.NewRequest("POST", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
@@ -350,5 +330,138 @@ func TestUserController_CreateUser(t *testing.T) {
 		json.Unmarshal(bytes, &httpResponse)
 
 		assert.Equal(t, "123", httpResponse.Id, "should return expected response")
+	})
+}
+
+func TestUserController_GetUserPaginated(t *testing.T) {
+	deps := BeforeEach(t)
+	defer deps.ctrl.Finish()
+
+	const getUserPaginatedEndpoint = "/api/v1/users"
+
+	t.Run("should mount the http exception when there is an error parsing query params", func(t *testing.T) {
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
+
+		req := httptest.NewRequest("GET", "/api/v1/users?page=ABCD", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+
+	})
+
+	t.Run("should mount the http exception when there is an error validating query params", func(t *testing.T) {
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
+		req := httptest.NewRequest("GET", "/api/v1/users", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
+		deps.mockGetUserPaginatedImpl.
+			EXPECT().
+			Do(gomock.Any()).
+			Times(1).
+			Return(nil, errors.New(exception.CodeDatabaseFailed))
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
+
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 500, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Failed to communicate with database", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should return empty error when successfully executed on getUserPaginatedImpl", func(t *testing.T) {
+		mockStruct := &database.PaginatedSlice[app.GetUserPaginatedOutput]{
+			Items: &[]app.GetUserPaginatedOutput{{
+				UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
+					DatabaseIdentifier: &database.DatabaseIdentifier{Id: "123"},
+				},
+			}},
+			Page:    1,
+			PerPage: 10,
+		}
+
+		deps.mockGetUserPaginatedImpl.
+			EXPECT().
+			Do(gomock.Any()).
+			Times(1).
+			Return(mockStruct, nil)
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
+
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		httpResponse := database.PaginatedSlice[app.GetUserPaginatedOutput]{}
+		json.Unmarshal(bytes, &httpResponse)
+
+		items := *httpResponse.Items
+
+		assert.Equal(t, 1, httpResponse.Page, "should return expected response")
+		assert.Equal(t, 10, httpResponse.PerPage, "should return expected response")
+		assert.Equal(t, "123", items[0].Id, "should return expected response")
 	})
 }

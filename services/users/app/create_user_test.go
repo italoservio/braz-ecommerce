@@ -35,7 +35,7 @@ func TestCreateUser_Do(t *testing.T) {
 
 		_, err := createUserImpl.Do(&app.CreateUserInput{Password: "test"})
 		if err == nil {
-			log.Fatal(err)
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")
@@ -52,7 +52,7 @@ func TestCreateUser_Do(t *testing.T) {
 
 		_, err := createUserImpl.Do(&app.CreateUserInput{Password: ""})
 		if err == nil {
-			log.Fatal(err)
+			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return error")

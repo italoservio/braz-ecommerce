@@ -83,6 +83,20 @@ func (mr *MockCrudRepositoryInterfaceMockRecorder) GetById(collection, id, struc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetById), collection, id, structure)
 }
 
+// GetPaginated mocks base method.
+func (m *MockCrudRepositoryInterface) GetPaginated(collection string, page, perPage int, filters map[string]any, projections, sortings map[string]int, structures any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaginated", collection, page, perPage, filters, projections, sortings, structures)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetPaginated indicates an expected call of GetPaginated.
+func (mr *MockCrudRepositoryInterfaceMockRecorder) GetPaginated(collection, page, perPage, filters, projections, sortings, structures any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaginated", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetPaginated), collection, page, perPage, filters, projections, sortings, structures)
+}
+
 // UpdateById mocks base method.
 func (m *MockCrudRepositoryInterface) UpdateById(collection, id string, structure any) error {
 	m.ctrl.T.Helper()
@@ -95,4 +109,27 @@ func (m *MockCrudRepositoryInterface) UpdateById(collection, id string, structur
 func (mr *MockCrudRepositoryInterfaceMockRecorder) UpdateById(collection, id, structure any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).UpdateById), collection, id, structure)
+}
+
+// MockPaginatedOutput is a mock of PaginatedOutput interface.
+type MockPaginatedOutput struct {
+	ctrl     *gomock.Controller
+	recorder *MockPaginatedOutputMockRecorder
+}
+
+// MockPaginatedOutputMockRecorder is the mock recorder for MockPaginatedOutput.
+type MockPaginatedOutputMockRecorder struct {
+	mock *MockPaginatedOutput
+}
+
+// NewMockPaginatedOutput creates a new mock instance.
+func NewMockPaginatedOutput(ctrl *gomock.Controller) *MockPaginatedOutput {
+	mock := &MockPaginatedOutput{ctrl: ctrl}
+	mock.recorder = &MockPaginatedOutputMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPaginatedOutput) EXPECT() *MockPaginatedOutputMockRecorder {
+	return m.recorder
 }

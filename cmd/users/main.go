@@ -34,6 +34,7 @@ func main() {
 
 	usersV1 := api.Group("/v1/users")
 	usersV1.Post("/", userController.CreateUser)
+	usersV1.Get("/", userController.GetUserPaginated)
 	usersV1.Get("/:id", userController.GetUserById)
 	usersV1.Delete("/:id", userController.DeleteUserById)
 	usersV1.Patch("/:id", userController.UpdateUser)
