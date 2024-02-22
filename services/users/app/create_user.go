@@ -13,7 +13,7 @@ import (
 )
 
 type CreateUserInterface interface {
-	Do(createUser *CreateUserInput) (*CreateUserOutput, error)
+	Do(input *CreateUserInput) (*CreateUserOutput, error)
 }
 
 type CreateUserImpl struct {
@@ -46,9 +46,9 @@ type CreateUserDatabase struct {
 	database.DatabaseTimestamp `bson:",inline"`
 }
 
-func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, error) {
+func (gu *CreateUserImpl) Do(input *CreateUserInput) (*CreateUserOutput, error) {
 	secret := os.Getenv("ENC_SECRET")
-	encryptionData, err := encryption.Encrypt(secret, createUser.Password)
+	encryptionData, err := encryption.Encrypt(secret, input.Password)
 
 	if err != nil {
 		return nil, errors.New(exception.CodeInternal)
@@ -56,10 +56,10 @@ func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, er
 
 	id, err := gu.crudRepository.CreateOne(database.UsersCollection, &CreateUserDatabase{
 		User: domain.User{
-			Type:      createUser.Type,
-			FirstName: createUser.FirstName,
-			LastName:  createUser.LastName,
-			Email:     createUser.Email,
+			Type:      input.Type,
+			FirstName: input.FirstName,
+			LastName:  input.LastName,
+			Email:     input.Email,
 			Addresses: []domain.UserAddress{},
 		},
 		UserPassword: domain.UserPassword{
