@@ -69,6 +69,20 @@ func (mr *MockCrudRepositoryInterfaceMockRecorder) DeleteById(collection, id any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).DeleteById), collection, id)
 }
 
+// GetByEmail mocks base method.
+func (m *MockCrudRepositoryInterface) GetByEmail(collection, email string, structure any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByEmail", collection, email, structure)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetByEmail indicates an expected call of GetByEmail.
+func (mr *MockCrudRepositoryInterfaceMockRecorder) GetByEmail(collection, email, structure any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).GetByEmail), collection, email, structure)
+}
+
 // GetById mocks base method.
 func (m *MockCrudRepositoryInterface) GetById(collection, id string, structure any) error {
 	m.ctrl.T.Helper()
