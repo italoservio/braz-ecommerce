@@ -519,3 +519,77 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 		assert.NotNil(t, err, "should return fill error")
 	})
 }
+
+func TestCrudRepository_GetByEmail(t *testing.T) {
+	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+
+	rootMt.Run("should return the document when call database with success", func(nestedMt *mtest.T) {
+		mockId := primitive.NewObjectID()
+
+		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
+			1,
+			MOCK_NS,
+			mtest.FirstBatch,
+			bson.D{
+				{Key: "_id", Value: mockId},
+				{Key: "foo", Value: "bar"},
+			},
+		))
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(mockDB)
+
+		var result MockStructure
+
+		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		assert.Nil(t, err, "should not return error")
+		assert.Equal(t, "bar", result.Foo, "should return the expected object by id")
+	})
+
+	rootMt.Run("should return error when no document is found", func(nestedMt *mtest.T) {
+
+		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
+			0,
+			MOCK_NS,
+			mtest.FirstBatch,
+		))
+
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(mockDB)
+
+		var result MockStructure
+
+		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		if err == nil {
+			t.Fail()
+		}
+
+		assert.Equal(t, exception.CodeNotFound, err.Error(), "should return the expected error")
+	})
+
+	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
+
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(mockDB)
+
+		var result MockStructure
+
+		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		if err == nil {
+			t.Fail()
+		}
+
+		assert.Equal(t, exception.CodeDatabaseFailed, err.Error(), "should return database call error")
+	})
+}
