@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	app "github.com/italoservio/braz_ecommerce/services/users/app"
@@ -42,16 +43,16 @@ func (m *MockCreateUserInterface) EXPECT() *MockCreateUserInterfaceMockRecorder 
 }
 
 // Do mocks base method.
-func (m *MockCreateUserInterface) Do(createUser *app.CreateUserInput) (*app.CreateUserOutput, error) {
+func (m *MockCreateUserInterface) Do(ctx context.Context, input *app.CreateUserInput) (*app.CreateUserOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", createUser)
+	ret := m.ctrl.Call(m, "Do", ctx, input)
 	ret0, _ := ret[0].(*app.CreateUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockCreateUserInterfaceMockRecorder) Do(createUser any) *gomock.Call {
+func (mr *MockCreateUserInterfaceMockRecorder) Do(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockCreateUserInterface)(nil).Do), createUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockCreateUserInterface)(nil).Do), ctx, input)
 }

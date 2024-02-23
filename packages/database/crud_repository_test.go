@@ -1,10 +1,12 @@
 package database_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,6 +25,8 @@ const (
 )
 
 func TestCrudRepository_GetById(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should return the document when call database with success", func(nestedMt *mtest.T) {
@@ -40,11 +44,11 @@ func TestCrudRepository_GetById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetById(MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
 		if err != nil {
 			t.Log(err.Error())
 			t.Fail()
@@ -66,11 +70,11 @@ func TestCrudRepository_GetById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetById(MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
 		if err == nil {
 			t.Fail()
 		}
@@ -86,11 +90,11 @@ func TestCrudRepository_GetById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetById(MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
 		if err == nil {
 			t.Fail()
 		}
@@ -104,9 +108,9 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		var mockStructure MockStructure
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
-		err := crudRepository.GetById(MOCK_COLL_NAME, mockWrongId, &mockStructure)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockWrongId, &mockStructure)
 		if err == nil {
 			t.Fail()
 		}
@@ -116,6 +120,8 @@ func TestCrudRepository_GetById(t *testing.T) {
 }
 
 func TestCrudRepository_DeleteById(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should return nil when call database with success", func(nestedMt *mtest.T) {
@@ -129,9 +135,9 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
-		err := crudRepository.DeleteById(MOCK_COLL_NAME, mockId.Hex())
+		err := crudRepository.DeleteById(ctx, MOCK_COLL_NAME, mockId.Hex())
 		if err != nil {
 			t.Log(err.Error())
 			t.Fail()
@@ -151,9 +157,9 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
-		err := crudRepository.DeleteById(MOCK_COLL_NAME, mockId.Hex())
+		err := crudRepository.DeleteById(ctx, MOCK_COLL_NAME, mockId.Hex())
 		if err == nil {
 			t.Fail()
 		}
@@ -166,9 +172,9 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 		mockWrongId := "something_wrong"
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
-		err := crudRepository.DeleteById(MOCK_COLL_NAME, mockWrongId)
+		err := crudRepository.DeleteById(ctx, MOCK_COLL_NAME, mockWrongId)
 		if err == nil {
 			t.Fail()
 		}
@@ -178,6 +184,8 @@ func TestCrudRepository_DeleteById(t *testing.T) {
 }
 
 func TestCrudRepository_CreateOne(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	type MockStructureB struct {
@@ -193,9 +201,10 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		id, err := crudRepository.CreateOne(
+			ctx,
 			MOCK_COLL_NAME,
 			MockStructureB{Foo: "bar", Id: &mockId},
 		)
@@ -214,9 +223,10 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		_, err := crudRepository.CreateOne(
+			ctx,
 			MOCK_COLL_NAME,
 			MockStructure{Foo: "bar"},
 		)
@@ -229,6 +239,8 @@ func TestCrudRepository_CreateOne(t *testing.T) {
 }
 
 func TestCrudRepository_UpdateById(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should return nil when call database with success", func(nestedMt *mtest.T) {
@@ -242,9 +254,10 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.UpdateById(
+			ctx,
 			MOCK_COLL_NAME,
 			mockId,
 			MockStructure{Foo: "bar", Id: mockId},
@@ -265,9 +278,10 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.UpdateById(
+			ctx,
 			MOCK_COLL_NAME,
 			mockId,
 			MockStructure{Foo: "bar", Id: mockId},
@@ -284,9 +298,10 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 		mockWrongId := "something_wrong"
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.UpdateById(
+			ctx,
 			MOCK_COLL_NAME,
 			mockWrongId,
 			MockStructure{Foo: "bar", Id: mockWrongId},
@@ -303,9 +318,10 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 		mockId := primitive.NewObjectID().Hex()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.UpdateById(
+			ctx,
 			MOCK_COLL_NAME,
 			mockId,
 			"something_wrong",
@@ -319,6 +335,8 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 }
 
 func TestCrudRepository_GetPaginated(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should fill the array when call database with success", func(nestedMt *mtest.T) {
@@ -358,9 +376,10 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.GetPaginated(
+			ctx,
 			MOCK_COLL_NAME,
 			page,
 			perPage,
@@ -414,9 +433,10 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.GetPaginated(
+			ctx,
 			MOCK_COLL_NAME,
 			page,
 			perPage,
@@ -447,9 +467,10 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.GetPaginated(
+			ctx,
 			MOCK_COLL_NAME,
 			page,
 			perPage,
@@ -501,9 +522,10 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		err := crudRepository.GetPaginated(
+			ctx,
 			MOCK_COLL_NAME,
 			page,
 			perPage,

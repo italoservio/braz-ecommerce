@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"errors"
 	"log"
 	"testing"
@@ -14,19 +15,31 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestGetUserPaginated_Do(t *testing.T) {
-	type MockStructure struct {
-		Id  string
-		Foo string
+type TestingDependencies_TestGetUserPaginated struct {
+	ctx                  context.Context
+	ctrl                 *gomock.Controller
+	mockCrudRepository   *mocks.MockCrudRepositoryInterface
+	getUserPaginatedImpl *app.GetUserPaginatedImpl
+}
+
+func BeforeEach_TestGetUserPaginated(t *testing.T) *TestingDependencies_TestGetUserPaginated {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+
+	getUserPaginatedImpl := app.NewGetUserPaginatedImpl(mockCrudRepository)
+
+	return &TestingDependencies_TestGetUserPaginated{
+		ctx:                  ctx,
+		ctrl:                 ctrl,
+		mockCrudRepository:   mockCrudRepository,
+		getUserPaginatedImpl: getUserPaginatedImpl,
 	}
+}
 
+func TestGetUserPaginated_Do(t *testing.T) {
 	t.Run("should return error when failed to call database", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
-
-		getUserPaginatedImpl := app.NewGetUserPaginatedImpl(mockCrudRepository)
+		deps := BeforeEach_TestGetUserPaginated(t)
 
 		mockExpectedError := errors.New("something goes wrong")
 		input := &app.GetUserPaginatedInput{}
@@ -40,13 +53,13 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			"created_at": -1,
 		}
 
-		mockCrudRepository.
+		deps.mockCrudRepository.
 			EXPECT().
-			GetPaginated(database.UsersCollection, input.Page, input.PerPage, filters, projection, sorting, gomock.Any()).
+			GetPaginated(gomock.Any(), database.UsersCollection, input.Page, input.PerPage, filters, projection, sorting, gomock.Any()).
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := getUserPaginatedImpl.Do(input)
+		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err == nil {
 			t.Fail()
 		}
@@ -55,12 +68,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 	})
 
 	t.Run("should return empty error when executed successfully", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
-
-		getUserPaginatedImpl := app.NewGetUserPaginatedImpl(mockCrudRepository)
+		deps := BeforeEach_TestGetUserPaginated(t)
 
 		objId1 := primitive.NewObjectID()
 		objId2 := primitive.NewObjectID()
@@ -84,11 +92,12 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			"created_at": -1,
 		}
 
-		mockCrudRepository.
+		deps.mockCrudRepository.
 			EXPECT().
-			GetPaginated(database.UsersCollection, input.Page, input.PerPage, filters, projection, sorting, gomock.Any()).
+			GetPaginated(gomock.Any(), database.UsersCollection, input.Page, input.PerPage, filters, projection, sorting, gomock.Any()).
 			Times(1).
 			DoAndReturn(func(
+				ctx context.Context,
 				collection string,
 				page int,
 				perPage int,
@@ -108,7 +117,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 				return nil
 			})
 
-		structures, err := getUserPaginatedImpl.Do(input)
+		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -118,12 +127,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 	})
 
 	t.Run("should return error when the filter id isn't a valid database id", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
-
-		getUserPaginatedImpl := app.NewGetUserPaginatedImpl(mockCrudRepository)
+		deps := BeforeEach_TestGetUserPaginated(t)
 
 		input := &app.GetUserPaginatedInput{
 			Page:    1,
@@ -131,7 +135,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			Ids:     []string{"foo"},
 		}
 
-		_, err := getUserPaginatedImpl.Do(input)
+		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err == nil {
 			t.Fail()
 		}

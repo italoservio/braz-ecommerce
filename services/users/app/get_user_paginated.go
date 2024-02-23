@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
@@ -9,7 +10,7 @@ import (
 )
 
 type GetUserPaginatedInterface interface {
-	Do(input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
+	Do(ctx context.Context, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
 }
 
 type GetUserPaginatedImpl struct {
@@ -36,6 +37,7 @@ type GetUserPaginatedOutput struct {
 }
 
 func (gup *GetUserPaginatedImpl) Do(
+	ctx context.Context,
 	input *GetUserPaginatedInput,
 ) (*database.PaginatedSlice[GetUserPaginatedOutput], error) {
 	sorting := mountSorting()
@@ -48,6 +50,7 @@ func (gup *GetUserPaginatedImpl) Do(
 	users := []GetUserPaginatedOutput{}
 
 	err = gup.crudRepository.GetPaginated(
+		ctx,
 		database.UsersCollection,
 		input.Page,
 		input.PerPage,

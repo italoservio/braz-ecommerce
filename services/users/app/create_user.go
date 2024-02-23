@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"os"
 	"time"
@@ -13,19 +14,25 @@ import (
 )
 
 type CreateUserInterface interface {
-	Do(createUser *CreateUserInput) (*CreateUserOutput, error)
+	Do(ctx context.Context, input *CreateUserInput) (*CreateUserOutput, error)
 }
 
 type CreateUserImpl struct {
+	encryption     encryption.EncryptionInterface
 	crudRepository database.CrudRepositoryInterface
 	userRepository storage.UserRepositoryInterface
 }
 
 func NewCreateUserImpl(
+	en encryption.EncryptionInterface,
 	cr database.CrudRepositoryInterface,
 	ur storage.UserRepositoryInterface,
 ) *CreateUserImpl {
-	return &CreateUserImpl{crudRepository: cr, userRepository: ur}
+	return &CreateUserImpl{
+		encryption:     en,
+		crudRepository: cr,
+		userRepository: ur,
+	}
 }
 
 type CreateUserOutput struct {
@@ -46,20 +53,20 @@ type CreateUserDatabase struct {
 	database.DatabaseTimestamp `bson:",inline"`
 }
 
-func (gu *CreateUserImpl) Do(createUser *CreateUserInput) (*CreateUserOutput, error) {
+func (gu *CreateUserImpl) Do(ctx context.Context, input *CreateUserInput) (*CreateUserOutput, error) {
 	secret := os.Getenv("ENC_SECRET")
-	encryptionData, err := encryption.Encrypt(secret, createUser.Password)
+	encryptionData, err := gu.encryption.Encrypt(ctx, secret, input.Password)
 
 	if err != nil {
 		return nil, errors.New(exception.CodeInternal)
 	}
 
-	id, err := gu.crudRepository.CreateOne(database.UsersCollection, &CreateUserDatabase{
+	id, err := gu.crudRepository.CreateOne(ctx, database.UsersCollection, &CreateUserDatabase{
 		User: domain.User{
-			Type:      createUser.Type,
-			FirstName: createUser.FirstName,
-			LastName:  createUser.LastName,
-			Email:     createUser.Email,
+			Type:      input.Type,
+			FirstName: input.FirstName,
+			LastName:  input.LastName,
+			Email:     input.Email,
 			Addresses: []domain.UserAddress{},
 		},
 		UserPassword: domain.UserPassword{
