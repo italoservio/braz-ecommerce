@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"os"
+	"time"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/encryption"
@@ -12,7 +13,7 @@ import (
 )
 
 type UpdateUserInterface interface {
-	Do(updateUser *UpdateUserInput, user *NewGetUserByIdOutput) (*UpdateUserOutput, error)
+	Do(updateUser *UpdateUserInput, id string) (*UpdateUserOutput, error)
 }
 
 type UpdateUserImpl struct {
@@ -27,50 +28,53 @@ func NewUpdateUserImpl(
 	return &UpdateUserImpl{crudRepository: cr, userRepository: ur}
 }
 
-type UpdateUserOutput struct {
-	*database.DatabaseIdentifier `bson:",inline"`
-	*domain.User                 `bson:",inline"`
-	*database.DatabaseTimestamp  `bson:",inline"`
-}
-
 type UpdateUserInput struct {
-	Id        *string     `json:"id"`
-	FirstName *string     `json:"first_name,omitempty" validate:"min=1,max=100" bson:"first_name,omitempty"`
-	LastName  *string     `json:"last_name,omitempty" validate:"min=1,max=100" bson:"last_name,omitempty"`
-	Email     *string     `json:"email,omitempty" validate:"min=1,max=100" bson:"email,omitempty"`
-	Type      *string     `json:"type,omitempty" validate:"min=1,max=100" bson:"type,omitempty"`
-	Password  *string     `json:"password,omitempty" validate:"min=1,max=100" bson:"password,omitempty"`
-	Addresses []Addresses `json:"tag_list"`
+	FirstName string    `json:"first_name" validate:"omitempty,min=1,max=100" bson:"first_name,omitempty"`
+	LastName  string    `json:"last_name" validate:"omitempty,min=1,max=100" bson:"last_name,omitempty"`
+	Email     string    `json:"email" validate:"omitempty,min=1,max=100" bson:"email,omitempty"`
+	Type      string    `json:"type" validate:"omitempty,min=1,max=100" bson:"type,omitempty"`
+	Password  string    `json:"password" validate:"omitempty,min=1,max=100" bson:"password,omitempty"`
+	UpdatedAt time.Time `json:"updated_at" validate:"omitempty" bson:"updated_at,omitempty"`
 }
 
-type Addresses struct {
-	Cep          *string `json:"cep,omitempty" validate:"required,min=1,max=100,string" bson:"cep,omitempty"`
-	Street       *string `json:"street,omitempty" validate:"min=1,max=100" bson:"street,omitempty"`
-	Neighborhood *string `json:"neighborhood,omitempty" validate:"min=1,max=100" bson:"neighborhood,omitempty"`
-	State        *string `json:"state,omitempty" validate:"min=1,max=100" bson:"state,omitempty"`
-	Country      *string `json:"country,omitempty" validate:"min=1,max=100" bson:"country,omitempty"`
-	Number       *string `json:"number,omitempty" validate:"min=1,max=100" bson:"number,omitempty"`
-	Complement   *string `json:"complement,omitempty" validate:"min=1,max=100" bson:"complement,omitempty"`
+type UpdateUserOutput struct {
+	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, user *NewGetUserByIdOutput) (*UpdateUserOutput, error) {
+func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string) (*UpdateUserOutput, error) {
+	var output UpdateUserOutput
 
-	if *updateUser.Password != "" {
+	err := gu.crudRepository.GetByEmail(database.UsersCollection, updateUser.Email, &output)
+
+	if err == nil && output.Id != id {
+		return nil, errors.New(exception.CodePermission)
+	}
+
+	if updateUser.Password != "" {
 		secret := os.Getenv("ENC_SECRET")
-		encryptionData, err := encryption.Encrypt(secret, *updateUser.Password)
+		encryptionData, err := encryption.Encrypt(secret, updateUser.Password)
 
 		if err != nil {
 			return nil, errors.New(exception.CodeInternal)
 		}
 
-		*updateUser.Password = encryptionData.EncryptedText
-		*updateUser.Password = encryptionData.Salt
+		updateUser.Password = encryptionData.EncryptedText
+		updateUser.Password = encryptionData.Salt
 	}
 
-	err := gu.crudRepository.UpdateById(database.UsersCollection, *updateUser.Id, &updateUser)
+	err = gu.crudRepository.UpdateById(database.UsersCollection, id, &updateUser)
 
 	if err != nil {
 		return nil, err
 	}
-	return &UpdateUserOutput{}, nil
+
+	var userOutput UpdateUserOutput
+
+	err = gu.crudRepository.GetById(database.UsersCollection, id, &userOutput)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userOutput, nil
 }

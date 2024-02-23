@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
@@ -44,6 +45,13 @@ type CreateUserPayload struct {
 	Password  string `json:"password" validate:"required,min=5,max=20"`
 }
 
+type GetUserPaginatedPayload struct {
+	Page    int      `query:"page" validate:"required,number,gt=0"`
+	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
+	Emails  []string `query:"email" validate:"omitempty,dive,email"`
+	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
+}
+
 func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	body := &app.CreateUserInput{}
 
@@ -81,32 +89,22 @@ func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	if err := validation.ValidateRequest(c, c.BodyParser(&body)); err != nil {
-		slog.Error(err.Error())
-		return errors.New(exception.CodeValidationFailed)
+	id := c.Params("id")
+
+	updateUser, err := uc.updateUserImpl.Do(&app.UpdateUserInput{
+		FirstName: body.FirstName,
+		LastName:  body.LastName,
+		Email:     body.Email,
+		Type:      body.Type,
+		Password:  body.Password,
+		UpdatedAt: time.Now(),
+	}, id)
+
+	if err != nil {
+		return err
 	}
-	// id := c.Params("id")
 
-	// user, err := uc.getUserByIdImpl.Do(id)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// updateUser, err := uc.updateUserImpl.Do(&app.UpdateUserInput{
-	// 	Id:        body.Id,
-	// 	FirstName: body.FirstName,
-	// 	LastName:  body.LastName,
-	// 	Email:     body.Email,
-	// 	Type:      body.Type,
-	// 	Password:  body.Password,
-	// 	Addresses: body.Addresses,
-	// }, user)
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	return c.JSON(nil)
+	return c.JSON(updateUser)
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
@@ -130,13 +128,6 @@ func (uc *UserControllerImpl) DeleteUserById(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusNoContent)
-}
-
-type GetUserPaginatedPayload struct {
-	Page    int      `query:"page" validate:"required,number,gt=0"`
-	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
-	Emails  []string `query:"email" validate:"omitempty,dive,email"`
-	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {

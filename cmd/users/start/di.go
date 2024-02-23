@@ -20,8 +20,8 @@ func InjectionsContainer(db *database.Database) *http.UserControllerImpl {
 		getUserByIdImpl,
 		deleteUserByIdImpl,
 		createUserImpl,
-		updateUserImpl,
 		getUserPaginatedImpl,
+		updateUserImpl,
 	)
 
 	return userControllerImpl
