@@ -98,7 +98,7 @@ func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
 		Type:      body.Type,
 		Password:  body.Password,
 		UpdatedAt: time.Now(),
-	}, id)
+	}, id, app.UpdateUserOutput{})
 
 	if err != nil {
 		return err

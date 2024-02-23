@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 )
 
 type UpdateUserInterface interface {
-	Do(updateUser *UpdateUserInput, id string) (*UpdateUserOutput, error)
+	Do(updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error)
 }
 
 type UpdateUserImpl struct {
@@ -41,8 +42,7 @@ type UpdateUserOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string) (*UpdateUserOutput, error) {
-	var output UpdateUserOutput
+func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
 
 	err := gu.crudRepository.GetByEmail(database.UsersCollection, updateUser.Email, &output)
 
@@ -54,10 +54,7 @@ func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string) (*UpdateUse
 		secret := os.Getenv("ENC_SECRET")
 		encryptionData, err := encryption.Encrypt(secret, updateUser.Password)
 
-		if err != nil {
-			return nil, errors.New(exception.CodeInternal)
-		}
-
+		fmt.Printf("%v", err)
 		updateUser.Password = encryptionData.EncryptedText
 		updateUser.Password = encryptionData.Salt
 	}

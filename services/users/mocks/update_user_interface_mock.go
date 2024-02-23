@@ -42,16 +42,16 @@ func (m *MockUpdateUserInterface) EXPECT() *MockUpdateUserInterfaceMockRecorder 
 }
 
 // Do mocks base method.
-func (m *MockUpdateUserInterface) Do(updateUser *app.UpdateUserInput, id string) (*app.UpdateUserOutput, error) {
+func (m *MockUpdateUserInterface) Do(updateUser *app.UpdateUserInput, id string, output app.UpdateUserOutput) (*app.UpdateUserOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", updateUser, id)
+	ret := m.ctrl.Call(m, "Do", updateUser, id, output)
 	ret0, _ := ret[0].(*app.UpdateUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockUpdateUserInterfaceMockRecorder) Do(updateUser, id any) *gomock.Call {
+func (mr *MockUpdateUserInterfaceMockRecorder) Do(updateUser, id, output any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockUpdateUserInterface)(nil).Do), updateUser, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockUpdateUserInterface)(nil).Do), updateUser, id, output)
 }
