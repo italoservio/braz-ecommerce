@@ -16,11 +16,6 @@ import (
 )
 
 type CrudRepositoryInterface interface {
-	GetByEmail(
-		ctx context.Context,
-		collection string,
-		email string,
-		structure any) error
 	GetById(
 		ctx context.Context,
 		collection string,
@@ -53,6 +48,11 @@ type CrudRepositoryInterface interface {
 		sortings map[string]int,
 		structures any,
 	) error
+	GetByEmail(
+		ctx context.Context,
+		collection string,
+		email string,
+		structure any) error
 }
 
 type CrudRepository struct {
@@ -235,6 +235,7 @@ func mapToBsonM[T any](m map[string]T) bson.M {
 }
 
 func (cr *CrudRepository) GetByEmail(
+	ctx context.Context,
 	collection string,
 	email string,
 	structure any,
@@ -242,10 +243,10 @@ func (cr *CrudRepository) GetByEmail(
 
 	coll := cr.database.Collection(collection)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	cursor, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	err := coll.FindOne(ctx, bson.M{"email": email}).Decode(structure)
+	err := coll.FindOne(cursor, bson.M{"email": email}).Decode(structure)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			slog.Error(err.Error())

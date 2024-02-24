@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -14,19 +15,25 @@ import (
 )
 
 type UpdateUserInterface interface {
-	Do(updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error)
+	Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error)
 }
 
 type UpdateUserImpl struct {
+	encryption     encryption.EncryptionInterface
 	crudRepository database.CrudRepositoryInterface
 	userRepository storage.UserRepositoryInterface
 }
 
 func NewUpdateUserImpl(
+	en encryption.EncryptionInterface,
 	cr database.CrudRepositoryInterface,
 	ur storage.UserRepositoryInterface,
 ) *UpdateUserImpl {
-	return &UpdateUserImpl{crudRepository: cr, userRepository: ur}
+	return &UpdateUserImpl{
+		encryption:     en,
+		crudRepository: cr,
+		userRepository: ur,
+	}
 }
 
 type UpdateUserInput struct {
@@ -42,9 +49,9 @@ type UpdateUserOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
+func (gu *UpdateUserImpl) Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
 
-	err := gu.crudRepository.GetByEmail(database.UsersCollection, updateUser.Email, &output)
+	err := gu.crudRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
 
 	if err == nil && output.Id != id {
 		return nil, errors.New(exception.CodePermission)
@@ -52,14 +59,14 @@ func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string, output Upda
 
 	if updateUser.Password != "" {
 		secret := os.Getenv("ENC_SECRET")
-		encryptionData, err := encryption.Encrypt(secret, updateUser.Password)
+		encryptionData, err := gu.encryption.Encrypt(ctx, secret, updateUser.Password)
 
 		fmt.Printf("%v", err)
 		updateUser.Password = encryptionData.EncryptedText
 		updateUser.Password = encryptionData.Salt
 	}
 
-	err = gu.crudRepository.UpdateById(database.UsersCollection, id, &updateUser)
+	err = gu.crudRepository.UpdateById(ctx, database.UsersCollection, id, &updateUser)
 
 	if err != nil {
 		return nil, err
@@ -67,7 +74,7 @@ func (gu *UpdateUserImpl) Do(updateUser *UpdateUserInput, id string, output Upda
 
 	var userOutput UpdateUserOutput
 
-	err = gu.crudRepository.GetById(database.UsersCollection, id, &userOutput)
+	err = gu.crudRepository.GetById(ctx, database.UsersCollection, id, &userOutput)
 
 	if err != nil {
 		return nil, err

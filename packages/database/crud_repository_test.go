@@ -543,6 +543,8 @@ func TestCrudRepository_GetPaginated(t *testing.T) {
 }
 
 func TestCrudRepository_GetByEmail(t *testing.T) {
+	ctx := context.TODO()
+	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should return the document when call database with success", func(nestedMt *mtest.T) {
@@ -560,11 +562,11 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err != nil {
 			t.Log(err.Error())
 			t.Fail()
@@ -575,7 +577,6 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 	})
 
 	rootMt.Run("should return error when no document is found", func(nestedMt *mtest.T) {
-
 		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
 			0,
 			MOCK_NS,
@@ -585,11 +586,11 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err == nil {
 			t.Fail()
 		}
@@ -598,16 +599,15 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 	})
 
 	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
-
 		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
 		defer nestedMt.ClearMockResponses()
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(mockDB)
+		crudRepository := database.NewCrudRepository(logger, mockDB)
 
 		var result MockStructure
 
-		err := crudRepository.GetByEmail(MOCK_COLL_NAME, "", &result)
+		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err == nil {
 			t.Fail()
 		}

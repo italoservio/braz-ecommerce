@@ -22,6 +22,7 @@ type TestingDependencies_TestCreateUser struct {
 	mockCrudRepository *mocks.MockCrudRepositoryInterface
 	mockUserRepository *mocks.MockUserRepositoryInterface
 	createUserImpl     *app.CreateUserImpl
+	updateUserImpl     *app.UpdateUserImpl
 }
 
 func BeforeEach_TestCreateUser(t *testing.T) *TestingDependencies_TestCreateUser {
@@ -32,6 +33,7 @@ func BeforeEach_TestCreateUser(t *testing.T) *TestingDependencies_TestCreateUser
 	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
 
 	createUserImpl := app.NewCreateUserImpl(encryption, mockCrudRepository, mockUserRepository)
+	updateUserImpl := app.NewUpdateUserImpl(encryption, mockCrudRepository, mockUserRepository)
 
 	return &TestingDependencies_TestCreateUser{
 		ctx:                ctx,
@@ -40,6 +42,7 @@ func BeforeEach_TestCreateUser(t *testing.T) *TestingDependencies_TestCreateUser
 		mockCrudRepository: mockCrudRepository,
 		mockUserRepository: mockUserRepository,
 		createUserImpl:     createUserImpl,
+		updateUserImpl:     updateUserImpl,
 	}
 }
 

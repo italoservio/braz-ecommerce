@@ -486,7 +486,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 }
 
 func TestUserController_UpdateUser(t *testing.T) {
-	deps := BeforeEach(t)
+	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
 	t.Run("should mount the http exception when there is an error in BodyParser", func(t *testing.T) {
@@ -528,7 +528,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 
 		deps.mockUpdateUserImpl.
 			EXPECT().
-			Do(gomock.Any(), "", gomock.Any()).
+			Do(gomock.Any(), gomock.Any(), "", gomock.Any()).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
@@ -582,7 +582,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 
 		deps.mockUpdateUserImpl.
 			EXPECT().
-			Do(gomock.Any(), id, gomock.Any()).
+			Do(gomock.Any(), gomock.Any(), id, gomock.Any()).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})

@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -84,7 +85,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 }
 
 func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
-
+	ctx := c.Context()
 	body := &app.UpdateUserInput{}
 
 	if err := c.BodyParser(&body); err != nil {
@@ -94,7 +95,7 @@ func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	updateUser, err := uc.updateUserImpl.Do(&app.UpdateUserInput{
+	updateUser, err := uc.updateUserImpl.Do(ctx, &app.UpdateUserInput{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
