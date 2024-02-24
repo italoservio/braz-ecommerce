@@ -8,3 +8,4 @@
 * BRAZ-21: Docker Image and Docker Compose
 * BRAZ-20: Add Commit Linter and Git Hooks
 * BRAZ-9: Get user paginated Endpoint
+* BRAZ-6: Update user Endpoint
