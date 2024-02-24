@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/http"
@@ -22,8 +24,10 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type TestingDependencies struct {
+type TestingDependencies_TestUserController struct {
+	ctx                      context.Context
 	ctrl                     *gomock.Controller
+	mockLoggerImpl           *mocks.MockLoggerInterface
 	mockGetUserByIdImpl      *mocks.MockGetUserByIdInterface
 	mockDeleteUserByIdImpl   *mocks.MockDeleteUserByIdInterface
 	mockCreateUserImpl       *mocks.MockCreateUserInterface
@@ -32,16 +36,25 @@ type TestingDependencies struct {
 	userController           *http.UserControllerImpl
 }
 
-func BeforeEach(t *testing.T) *TestingDependencies {
+func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserController {
+	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
 
+	mockLoggerImpl := mocks.NewMockLoggerInterface(ctrl)
 	mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 	mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
 	mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
 	mockGetUserPaginatedImpl := mocks.NewMockGetUserPaginatedInterface(ctrl)
 	mockUpdateUserImpl := mocks.NewMockUpdateUserInterface(ctrl)
 
+	mockLoggerImpl.
+		EXPECT().
+		WithCtx(gomock.Any()).
+		AnyTimes().
+		Return(&logger.Logger{})
+
 	userController := http.NewUserControllerImpl(
+		mockLoggerImpl,
 		mockGetUserByIdImpl,
 		mockDeleteUserByIdImpl,
 		mockCreateUserImpl,
@@ -49,8 +62,10 @@ func BeforeEach(t *testing.T) *TestingDependencies {
 		mockUpdateUserImpl,
 	)
 
-	return &TestingDependencies{
+	return &TestingDependencies_TestUserController{
+		ctx:                      ctx,
 		ctrl:                     ctrl,
+		mockLoggerImpl:           mockLoggerImpl,
 		mockGetUserByIdImpl:      mockGetUserByIdImpl,
 		mockDeleteUserByIdImpl:   mockDeleteUserByIdImpl,
 		mockCreateUserImpl:       mockCreateUserImpl,
@@ -61,14 +76,14 @@ func BeforeEach(t *testing.T) *TestingDependencies {
 }
 
 func TestUserController_GetUserById(t *testing.T) {
-	deps := BeforeEach(t)
+	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 		deps.mockGetUserByIdImpl.
 			EXPECT().
-			Do(id).
+			Do(gomock.Any(), id).
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
@@ -104,7 +119,7 @@ func TestUserController_GetUserById(t *testing.T) {
 		}
 
 		deps.mockGetUserByIdImpl.EXPECT().
-			Do(id).
+			Do(gomock.Any(), id).
 			Times(1).
 			Return(mockStruct, nil)
 
@@ -132,14 +147,14 @@ func TestUserController_GetUserById(t *testing.T) {
 }
 
 func TestUserController_DeleteUserById(t *testing.T) {
-	deps := BeforeEach(t)
+	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 		deps.mockDeleteUserByIdImpl.
 			EXPECT().
-			Do(id).
+			Do(gomock.Any(), id).
 			Times(1).
 			Return(errors.New(exception.CodeDatabaseFailed))
 
@@ -170,7 +185,7 @@ func TestUserController_DeleteUserById(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 
 		deps.mockDeleteUserByIdImpl.EXPECT().
-			Do(id).
+			Do(gomock.Any(), id).
 			Times(1).
 			Return(nil)
 
@@ -195,7 +210,7 @@ func TestUserController_DeleteUserById(t *testing.T) {
 }
 
 func TestUserController_CreateUser(t *testing.T) {
-	deps := BeforeEach(t)
+	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
 	t.Run("should mount the http exception when there is an error in BodyParser", func(t *testing.T) {
@@ -223,7 +238,6 @@ func TestUserController_CreateUser(t *testing.T) {
 	})
 
 	t.Run("should mount the http exception when there is an error in ValidationRequest", func(t *testing.T) {
-
 		payload := &app.CreateUserInput{
 			FirstName: "username",
 			LastName:  "userlastname",
@@ -268,7 +282,7 @@ func TestUserController_CreateUser(t *testing.T) {
 
 		deps.mockCreateUserImpl.
 			EXPECT().
-			Do(gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
@@ -311,7 +325,7 @@ func TestUserController_CreateUser(t *testing.T) {
 		}
 
 		deps.mockCreateUserImpl.EXPECT().
-			Do(gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(mockStruct, nil)
 
@@ -339,7 +353,7 @@ func TestUserController_CreateUser(t *testing.T) {
 }
 
 func TestUserController_GetUserPaginated(t *testing.T) {
-	deps := BeforeEach(t)
+	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
 	const getUserPaginatedEndpoint = "/api/v1/users"
@@ -398,7 +412,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
@@ -439,7 +453,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(mockStruct, nil)
 

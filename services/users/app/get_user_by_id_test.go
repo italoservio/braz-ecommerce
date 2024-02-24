@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"errors"
 	"log"
 	"testing"
@@ -13,30 +14,49 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+type TestingDependencies_TestGetUserById struct {
+	ctx                context.Context
+	ctrl               *gomock.Controller
+	mockCrudRepository *mocks.MockCrudRepositoryInterface
+	mockUserRepository *mocks.MockUserRepositoryInterface
+	getUserByIdImpl    *app.GetUserByIdImpl
+}
+
+func BeforeEach_TestGetUserById(t *testing.T) *TestingDependencies_TestGetUserById {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
+
+	getUserByIdImpl := app.NewGetUserByIdImpl(mockCrudRepository, mockUserRepository)
+
+	return &TestingDependencies_TestGetUserById{
+		ctx:                ctx,
+		ctrl:               ctrl,
+		mockCrudRepository: mockCrudRepository,
+		mockUserRepository: mockUserRepository,
+		getUserByIdImpl:    getUserByIdImpl,
+	}
+}
+
 func TestGetUserById_Do(t *testing.T) {
 	type MockStructure struct {
 		Foo string
 	}
 
 	t.Run("should return error when failed to call database", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
-		mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
-
-		getUserByIdImpl := app.NewGetUserByIdImpl(mockCrudRepository, mockUserRepository)
+		deps := BeforeEach_TestGetUserById(t)
 
 		mockExpectedError := errors.New("something goes wrong")
 		id := primitive.NewObjectID().Hex()
 
-		mockCrudRepository.
+		deps.mockCrudRepository.
 			EXPECT().
-			GetById(database.UsersCollection, id, gomock.Any()).
+			GetById(gomock.Any(), database.UsersCollection, id, gomock.Any()).
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := getUserByIdImpl.Do(id)
+		_, err := deps.getUserByIdImpl.Do(deps.ctx, id)
 		if err == nil {
 			t.Fail()
 		}
@@ -45,23 +65,16 @@ func TestGetUserById_Do(t *testing.T) {
 	})
 
 	t.Run("should return empty error when executed successfully", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
-		mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
-
-		getUserByIdImpl := app.NewGetUserByIdImpl(mockCrudRepository, mockUserRepository)
-
+		deps := BeforeEach_TestGetUserById(t)
 		id := primitive.NewObjectID().Hex()
 
-		mockCrudRepository.
+		deps.mockCrudRepository.
 			EXPECT().
-			GetById(database.UsersCollection, id, gomock.Any()).
+			GetById(gomock.Any(), database.UsersCollection, id, gomock.Any()).
 			Times(1).
 			Return(nil)
 
-		_, err := getUserByIdImpl.Do(id)
+		_, err := deps.getUserByIdImpl.Do(deps.ctx, id)
 		if err != nil {
 			log.Fatal(err)
 		}

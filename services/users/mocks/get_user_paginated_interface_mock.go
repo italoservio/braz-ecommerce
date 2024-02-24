@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	database "github.com/italoservio/braz_ecommerce/packages/database"
@@ -43,16 +44,16 @@ func (m *MockGetUserPaginatedInterface) EXPECT() *MockGetUserPaginatedInterfaceM
 }
 
 // Do mocks base method.
-func (m *MockGetUserPaginatedInterface) Do(input *app.GetUserPaginatedInput) (*database.PaginatedSlice[app.GetUserPaginatedOutput], error) {
+func (m *MockGetUserPaginatedInterface) Do(ctx context.Context, input *app.GetUserPaginatedInput) (*database.PaginatedSlice[app.GetUserPaginatedOutput], error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", input)
+	ret := m.ctrl.Call(m, "Do", ctx, input)
 	ret0, _ := ret[0].(*database.PaginatedSlice[app.GetUserPaginatedOutput])
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockGetUserPaginatedInterfaceMockRecorder) Do(input any) *gomock.Call {
+func (mr *MockGetUserPaginatedInterfaceMockRecorder) Do(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockGetUserPaginatedInterface)(nil).Do), input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockGetUserPaginatedInterface)(nil).Do), ctx, input)
 }

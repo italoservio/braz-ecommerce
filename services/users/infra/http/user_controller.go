@@ -2,18 +2,18 @@ package http
 
 import (
 	"errors"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 	"github.com/italoservio/braz_ecommerce/packages/validation"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 )
 
 type UserControllerImpl struct {
+	logger               logger.LoggerInterface
 	getUserByIdImpl      app.GetUserByIdInterface
 	deleteUserByIdImpl   app.DeleteUserByIdInterface
 	createUserImpl       app.CreateUserInterface
@@ -22,6 +22,7 @@ type UserControllerImpl struct {
 }
 
 func NewUserControllerImpl(
+	logger logger.LoggerInterface,
 	getUserByIdImpl app.GetUserByIdInterface,
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
@@ -29,6 +30,7 @@ func NewUserControllerImpl(
 	updateUserImpl app.UpdateUserInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
+		logger:               logger,
 		getUserByIdImpl:      getUserByIdImpl,
 		deleteUserByIdImpl:   deleteUserByIdImpl,
 		createUserImpl:       createUserImpl,
@@ -53,19 +55,20 @@ type GetUserPaginatedPayload struct {
 }
 
 func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
+	ctx := c.Context()
 	body := &app.CreateUserInput{}
 
 	if err := c.BodyParser(&body); err != nil {
-		slog.Error(err.Error())
+		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
 	if err := validation.ValidateRequest(c, body); err != nil {
-		slog.Error(err.Error())
+		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	output, err := uc.createUserImpl.Do(&app.CreateUserInput{
+	output, err := uc.createUserImpl.Do(ctx, &app.CreateUserInput{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
@@ -108,9 +111,10 @@ func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
+	ctx := c.Context()
 	id := c.Params("id")
 
-	user, err := uc.getUserByIdImpl.Do(id)
+	user, err := uc.getUserByIdImpl.Do(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -119,9 +123,10 @@ func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 }
 
 func (uc *UserControllerImpl) DeleteUserById(c *fiber.Ctx) error {
+	ctx := c.Context()
 	id := c.Params("id")
 
-	err := uc.deleteUserByIdImpl.Do(id)
+	err := uc.deleteUserByIdImpl.Do(ctx, id)
 
 	if err != nil {
 		return err
@@ -131,24 +136,21 @@ func (uc *UserControllerImpl) DeleteUserById(c *fiber.Ctx) error {
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
+	ctx := c.Context()
 	queryParams := GetUserPaginatedPayload{}
-
-	fmt.Println(c.Params("page"))
 
 	err := c.QueryParser(&queryParams)
 	if err != nil {
-		slog.Error(err.Error())
+		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
-
-	fmt.Println(queryParams)
 
 	if err := validation.ValidateRequest(c, queryParams); err != nil {
-		slog.Error(err.Error())
+		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	output, err := uc.getUserPaginatedImpl.Do(&app.GetUserPaginatedInput{
+	output, err := uc.getUserPaginatedImpl.Do(ctx, &app.GetUserPaginatedInput{
 		Page:    queryParams.Page,
 		PerPage: queryParams.PerPage,
 		Emails:  queryParams.Emails,

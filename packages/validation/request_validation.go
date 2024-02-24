@@ -2,11 +2,13 @@ package validation
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
+	"github.com/italoservio/braz_ecommerce/packages/logger"
 )
 
 type ErrorResponse struct {
@@ -17,12 +19,13 @@ type ErrorResponse struct {
 }
 
 func ValidateRequest(c *fiber.Ctx, payload any) error {
+	correlationId := c.Locals(string(logger.CorrelationId))
 	validate := validator.New()
 	validationErrors := []ErrorResponse{}
 	errs := validate.Struct(payload)
 	if errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
-			slog.Error(err.Error())
+			slog.Error(fmt.Sprintf("%s %s", correlationId, err.Error()))
 
 			validationErrors = append(validationErrors, ErrorResponse{
 				Error:       true,
