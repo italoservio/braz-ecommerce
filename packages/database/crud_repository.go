@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"reflect"
 	"time"
 
@@ -249,11 +248,10 @@ func (cr *CrudRepository) GetByEmail(
 	err := coll.FindOne(cursor, bson.M{"email": email}).Decode(structure)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			slog.Error(err.Error())
+			cr.logger.WithCtx(ctx).Error(err.Error())
 			return errors.New(exception.CodeNotFound)
 		}
-
-		slog.Error(err.Error())
+		cr.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeDatabaseFailed)
 	}
 
