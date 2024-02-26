@@ -95,14 +95,14 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	updateUser, err := uc.updateUserImpl.Do(ctx, &app.UpdateUserInput{
+	updateUser, err := uc.updateUserImpl.Do(ctx, id, &app.UpdateUserInput{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
 		Type:      body.Type,
 		Password:  body.Password,
 		UpdatedAt: time.Now(),
-	}, id, app.UpdateUserOutput{})
+	}, app.UpdateUserOutput{})
 
 	if err != nil {
 		return err

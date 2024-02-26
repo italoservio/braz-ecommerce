@@ -65,7 +65,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := deps.updateUserImpl.Do(deps.ctx, &app.UpdateUserInput{Email: "teste"}, id, app.UpdateUserOutput{})
+		_, err := deps.updateUserImpl.Do(deps.ctx, id, &app.UpdateUserInput{Email: "teste"}, app.UpdateUserOutput{})
 		if err == nil {
 			t.Fail()
 		}
@@ -106,7 +106,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := deps.updateUserImpl.Do(deps.ctx, &app.UpdateUserInput{Email: "testeteste", Password: mockPassword}, "",
+		_, err := deps.updateUserImpl.Do(deps.ctx, "", &app.UpdateUserInput{Email: "testeteste", Password: mockPassword},
 			app.UpdateUserOutput{
 				UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
 					DatabaseIdentifier: &database.DatabaseIdentifier{
@@ -133,7 +133,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Times(1).
 			Return(nil)
 
-		_, err := deps.updateUserImpl.Do(deps.ctx, &app.UpdateUserInput{Email: "teste"}, id,
+		_, err := deps.updateUserImpl.Do(deps.ctx, id, &app.UpdateUserInput{Email: "teste"},
 			app.UpdateUserOutput{
 				UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
 					DatabaseIdentifier: &database.DatabaseIdentifier{
@@ -179,7 +179,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Times(1).
 			Return(nil)
 
-		_, err := deps.updateUserImpl.Do(deps.ctx, &app.UpdateUserInput{Email: "testeteste", Password: mockPassword}, "",
+		_, err := deps.updateUserImpl.Do(deps.ctx, "", &app.UpdateUserInput{Email: "testeteste", Password: mockPassword},
 			app.UpdateUserOutput{
 				UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
 					DatabaseIdentifier: &database.DatabaseIdentifier{

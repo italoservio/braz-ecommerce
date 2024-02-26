@@ -15,7 +15,7 @@ import (
 )
 
 type UpdateUserByIdInterface interface {
-	Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error)
+	Do(ctx context.Context, id string, updateUser *UpdateUserInput, output UpdateUserOutput) (*UpdateUserOutput, error)
 }
 
 type UpdateUserByIdImpl struct {
@@ -49,7 +49,7 @@ type UpdateUserOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserByIdImpl) Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
+func (gu *UpdateUserByIdImpl) Do(ctx context.Context, id string, updateUser *UpdateUserInput, output UpdateUserOutput) (*UpdateUserOutput, error) {
 
 	err := gu.userRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
 
