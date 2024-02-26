@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"errors"
 	"os"
 	"testing"
@@ -9,15 +10,44 @@ import (
 	"github.com/italoservio/braz_ecommerce/packages/encryption"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
+	"github.com/italoservio/braz_ecommerce/services/users/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/mock/gomock"
 )
 
+type TestingDependencies_TestUpdateUser struct {
+	ctx                context.Context
+	ctrl               *gomock.Controller
+	encryption         *mocks.MockEncryptionInterface
+	mockCrudRepository *mocks.MockCrudRepositoryInterface
+	mockUserRepository *mocks.MockUserRepositoryInterface
+	updateUserImpl     *app.UpdateUserByIdImpl
+}
+
+func BeforeEach_TestUpdateUser(t *testing.T) *TestingDependencies_TestUpdateUser {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	encryption := mocks.NewMockEncryptionInterface(ctrl)
+	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
+
+	updateUserImpl := app.NewUpdateUserImpl(encryption, mockCrudRepository, mockUserRepository)
+
+	return &TestingDependencies_TestUpdateUser{
+		ctx:                ctx,
+		ctrl:               ctrl,
+		encryption:         encryption,
+		mockCrudRepository: mockCrudRepository,
+		mockUserRepository: mockUserRepository,
+		updateUserImpl:     updateUserImpl,
+	}
+}
+
 func TestUpdateUser_Do(t *testing.T) {
 
 	t.Run("should return error when failed to call database UpdateById", func(t *testing.T) {
-		deps := BeforeEach_TestCreateUser(t)
+		deps := BeforeEach_TestUpdateUser(t)
 		defer deps.ctrl.Finish()
 
 		mockExpectedError := errors.New("something goes wrong")
@@ -46,7 +76,7 @@ func TestUpdateUser_Do(t *testing.T) {
 	t.Run("should return error when failed to call database GetById", func(t *testing.T) {
 		os.Setenv("ENC_SECRET", "2zmXvZa93wneR1w1L63i9cAUzSIzPdd6")
 
-		deps := BeforeEach_TestCreateUser(t)
+		deps := BeforeEach_TestUpdateUser(t)
 		defer deps.ctrl.Finish()
 
 		mockExpectedError := errors.New("something goes wrong")
@@ -92,7 +122,7 @@ func TestUpdateUser_Do(t *testing.T) {
 	})
 
 	t.Run("should return a permission error because the id sent is different from the one found in the email", func(t *testing.T) {
-		deps := BeforeEach_TestCreateUser(t)
+		deps := BeforeEach_TestUpdateUser(t)
 		defer deps.ctrl.Finish()
 
 		id := primitive.NewObjectID().Hex()
@@ -121,7 +151,7 @@ func TestUpdateUser_Do(t *testing.T) {
 	t.Run("should return empty error when executed successfully", func(t *testing.T) {
 		os.Setenv("ENC_SECRET", "2zmXvZa93wneR1w1L63i9cAUzSIzPdd6")
 
-		deps := BeforeEach_TestCreateUser(t)
+		deps := BeforeEach_TestUpdateUser(t)
 		mockPassword := "test"
 
 		defer deps.ctrl.Finish()
