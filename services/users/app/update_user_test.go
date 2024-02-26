@@ -23,7 +23,7 @@ func TestUpdateUser_Do(t *testing.T) {
 		mockExpectedError := errors.New("something goes wrong")
 		id := primitive.NewObjectID().Hex()
 
-		deps.mockCrudRepository.
+		deps.mockUserRepository.
 			EXPECT().
 			GetByEmail(gomock.Any(), database.UsersCollection, "teste", gomock.Any()).
 			Times(1).
@@ -58,7 +58,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Times(1).
 			Return(&encryption.EncryptedText{EncryptedText: "", Salt: ""}, nil)
 
-		deps.mockCrudRepository.
+		deps.mockUserRepository.
 			EXPECT().
 			GetByEmail(gomock.Any(), database.UsersCollection, gomock.Any(), gomock.Any()).
 			Times(1).
@@ -97,7 +97,7 @@ func TestUpdateUser_Do(t *testing.T) {
 
 		id := primitive.NewObjectID().Hex()
 
-		deps.mockCrudRepository.
+		deps.mockUserRepository.
 			EXPECT().
 			GetByEmail(gomock.Any(), database.UsersCollection, gomock.Any(), gomock.Any()).
 			Times(1).
@@ -131,7 +131,7 @@ func TestUpdateUser_Do(t *testing.T) {
 			Encrypt(gomock.Any(), gomock.Any(), mockPassword).
 			Times(1).
 			Return(&encryption.EncryptedText{EncryptedText: "", Salt: ""}, nil)
-		deps.mockCrudRepository.
+		deps.mockUserRepository.
 			EXPECT().
 			GetByEmail(gomock.Any(), database.UsersCollection, gomock.Any(), gomock.Any()).
 			Times(1).

@@ -51,7 +51,7 @@ type UpdateUserOutput struct {
 
 func (gu *UpdateUserByIdImpl) Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
 
-	err := gu.crudRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
+	err := gu.userRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
 
 	if err == nil && output.Id != id {
 		return nil, errors.New(exception.CodePermission)

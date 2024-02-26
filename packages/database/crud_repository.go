@@ -47,11 +47,6 @@ type CrudRepositoryInterface interface {
 		sortings map[string]int,
 		structures any,
 	) error
-	GetByEmail(
-		ctx context.Context,
-		collection string,
-		email string,
-		structure any) error
 }
 
 type CrudRepository struct {
@@ -231,29 +226,4 @@ func mapToBsonM[T any](m map[string]T) bson.M {
 		}
 	}
 	return doc
-}
-
-func (cr *CrudRepository) GetByEmail(
-	ctx context.Context,
-	collection string,
-	email string,
-	structure any,
-) error {
-
-	coll := cr.database.Collection(collection)
-
-	cursor, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	err := coll.FindOne(cursor, bson.M{"email": email}).Decode(structure)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			cr.logger.WithCtx(ctx).Error(err.Error())
-			return errors.New(exception.CodeNotFound)
-		}
-		cr.logger.WithCtx(ctx).Error(err.Error())
-		return errors.New(exception.CodeDatabaseFailed)
-	}
-
-	return nil
 }

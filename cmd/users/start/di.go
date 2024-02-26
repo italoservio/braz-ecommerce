@@ -13,7 +13,7 @@ func InjectionsContainer(db *database.Database) *http.UserControllerImpl {
 	loggerImpl := logger.NewLogger()
 	encryptionImpl := encryption.NewEncryptionImpl(loggerImpl)
 
-	userRepositoryImpl := storage.NewUserRepositoryImpl(db)
+	userRepositoryImpl := storage.NewUserRepositoryImpl(loggerImpl, db)
 	crudRepositoryImpl := database.NewCrudRepository(loggerImpl, db)
 	getUserByIdImpl := app.NewGetUserByIdImpl(crudRepositoryImpl, userRepositoryImpl)
 	deleteUserByIdImpl := app.NewDeleteUserByIdImpl(crudRepositoryImpl, userRepositoryImpl)
