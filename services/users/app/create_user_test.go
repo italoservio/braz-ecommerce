@@ -22,7 +22,7 @@ type TestingDependencies_TestCreateUser struct {
 	mockCrudRepository *mocks.MockCrudRepositoryInterface
 	mockUserRepository *mocks.MockUserRepositoryInterface
 	createUserImpl     *app.CreateUserImpl
-	updateUserImpl     *app.UpdateUserImpl
+	updateUserImpl     *app.UpdateUserByIdImpl
 }
 
 func BeforeEach_TestCreateUser(t *testing.T) *TestingDependencies_TestCreateUser {

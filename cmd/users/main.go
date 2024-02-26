@@ -47,7 +47,7 @@ func main() {
 	usersV1.Get("/", userController.GetUserPaginated)
 	usersV1.Get("/:id", userController.GetUserById)
 	usersV1.Delete("/:id", userController.DeleteUserById)
-	usersV1.Patch("/:id", userController.UpdateUser)
+	usersV1.Patch("/:id", userController.UpdateUserById)
 
 	go func() { log.Fatal(app.Listen(env.PORT)) }()
 

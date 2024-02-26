@@ -491,7 +491,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 
 	t.Run("should mount the http exception when there is an error in BodyParser", func(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Patch("/api/v1/users/", deps.userController.UpdateUser)
+		fbr.Patch("/api/v1/users/", deps.userController.UpdateUserById)
 		req := httptest.NewRequest("PATCH", "/api/v1/users/", nil)
 
 		response, err := fbr.Test(req, -1)
@@ -532,7 +532,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Patch("/api/v1/users/", deps.userController.UpdateUser)
+		fbr.Patch("/api/v1/users/", deps.userController.UpdateUserById)
 		req := httptest.NewRequest("PATCH", "/api/v1/users/", io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)
@@ -586,7 +586,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 			Return(mockStruct, nil)
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
-		fbr.Patch("/api/v1/users/:id", deps.userController.UpdateUser)
+		fbr.Patch("/api/v1/users/:id", deps.userController.UpdateUserById)
 		req := httptest.NewRequest("PATCH", fmt.Sprintf("/api/v1/users/%s", id), io.Reader(reader))
 		req.Header.Set("Content-Type", "application/json")
 		response, err := fbr.Test(req, -1)

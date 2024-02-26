@@ -14,11 +14,11 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
 
-type UpdateUserInterface interface {
+type UpdateUserByIdInterface interface {
 	Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error)
 }
 
-type UpdateUserImpl struct {
+type UpdateUserByIdImpl struct {
 	encryption     encryption.EncryptionInterface
 	crudRepository database.CrudRepositoryInterface
 	userRepository storage.UserRepositoryInterface
@@ -28,8 +28,8 @@ func NewUpdateUserImpl(
 	en encryption.EncryptionInterface,
 	cr database.CrudRepositoryInterface,
 	ur storage.UserRepositoryInterface,
-) *UpdateUserImpl {
-	return &UpdateUserImpl{
+) *UpdateUserByIdImpl {
+	return &UpdateUserByIdImpl{
 		encryption:     en,
 		crudRepository: cr,
 		userRepository: ur,
@@ -49,7 +49,7 @@ type UpdateUserOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserImpl) Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
+func (gu *UpdateUserByIdImpl) Do(ctx context.Context, updateUser *UpdateUserInput, id string, output UpdateUserOutput) (*UpdateUserOutput, error) {
 
 	err := gu.crudRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
 

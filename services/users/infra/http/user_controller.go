@@ -19,7 +19,7 @@ type UserControllerImpl struct {
 	deleteUserByIdImpl   app.DeleteUserByIdInterface
 	createUserImpl       app.CreateUserInterface
 	getUserPaginatedImpl app.GetUserPaginatedInterface
-	updateUserImpl       app.UpdateUserInterface
+	updateUserImpl       app.UpdateUserByIdInterface
 }
 
 func NewUserControllerImpl(
@@ -28,7 +28,7 @@ func NewUserControllerImpl(
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
 	getUserPaginatedImpl app.GetUserPaginatedInterface,
-	updateUserImpl app.UpdateUserInterface,
+	updateUserImpl app.UpdateUserByIdInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
 		logger:               logger,
@@ -84,7 +84,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(output)
 }
 
-func (uc *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
+func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	body := &app.UpdateUserInput{}
 
