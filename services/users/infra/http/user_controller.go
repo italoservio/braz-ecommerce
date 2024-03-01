@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
@@ -48,13 +47,6 @@ type CreateUserPayload struct {
 	Password  string `json:"password" validate:"required,min=5,max=20"`
 }
 
-type GetUserPaginatedPayload struct {
-	Page    int      `query:"page" validate:"required,number,gt=0"`
-	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
-	Emails  []string `query:"email" validate:"omitempty,dive,email"`
-	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
-}
-
 func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	ctx := c.Context()
 	body := &app.CreateUserInput{}
@@ -86,7 +78,7 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 
 func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
-	body := &app.UpdateUserInput{}
+	body := &app.UpdateUserByIdInput{}
 
 	if err := c.BodyParser(&body); err != nil {
 		slog.Error(err.Error())
@@ -95,14 +87,13 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	updateUser, err := uc.updateUserImpl.Do(ctx, id, &app.UpdateUserInput{
+	updateUser, err := uc.updateUserImpl.Do(ctx, id, &app.UpdateUserByIdInput{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
 		Type:      body.Type,
 		Password:  body.Password,
-		UpdatedAt: time.Now(),
-	}, app.UpdateUserOutput{})
+	})
 
 	if err != nil {
 		return err
@@ -134,6 +125,13 @@ func (uc *UserControllerImpl) DeleteUserById(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusNoContent)
+}
+
+type GetUserPaginatedPayload struct {
+	Page    int      `query:"page" validate:"required,number,gt=0"`
+	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
+	Emails  []string `query:"email" validate:"omitempty,dive,email"`
+	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {

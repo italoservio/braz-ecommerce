@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -15,7 +14,7 @@ import (
 )
 
 type UpdateUserByIdInterface interface {
-	Do(ctx context.Context, id string, updateUser *UpdateUserInput, output UpdateUserOutput) (*UpdateUserOutput, error)
+	Do(ctx context.Context, id string, updateUser *UpdateUserByIdInput) (*UpdateUserByIdOutput, error)
 }
 
 type UpdateUserByIdImpl struct {
@@ -24,7 +23,7 @@ type UpdateUserByIdImpl struct {
 	userRepository storage.UserRepositoryInterface
 }
 
-func NewUpdateUserImpl(
+func NewUpdateUserByIdImpl(
 	en encryption.EncryptionInterface,
 	cr database.CrudRepositoryInterface,
 	ur storage.UserRepositoryInterface,
@@ -36,49 +35,61 @@ func NewUpdateUserImpl(
 	}
 }
 
-type UpdateUserInput struct {
+type UpdateUserByIdInput struct {
 	FirstName string    `json:"first_name" validate:"omitempty,min=1,max=100" bson:"first_name,omitempty"`
 	LastName  string    `json:"last_name" validate:"omitempty,min=1,max=100" bson:"last_name,omitempty"`
 	Email     string    `json:"email" validate:"omitempty,min=1,max=100" bson:"email,omitempty"`
 	Type      string    `json:"type" validate:"omitempty,min=1,max=100" bson:"type,omitempty"`
 	Password  string    `json:"password" validate:"omitempty,min=1,max=100" bson:"password,omitempty"`
-	UpdatedAt time.Time `json:"updated_at" validate:"omitempty" bson:"updated_at,omitempty"`
+	UpdatedAt time.Time `bson:"updated_at,omitempty"`
 }
 
-type UpdateUserOutput struct {
+type UpdateUserByIdOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *UpdateUserByIdImpl) Do(ctx context.Context, id string, updateUser *UpdateUserInput, output UpdateUserOutput) (*UpdateUserOutput, error) {
+func (gu *UpdateUserByIdImpl) Do(
+	ctx context.Context,
+	id string,
+	input *UpdateUserByIdInput,
+) (*UpdateUserByIdOutput, error) {
+	var existentUser domain.UserDatabaseNoPassword
 
-	err := gu.userRepository.GetByEmail(ctx, database.UsersCollection, updateUser.Email, &output)
+	err := gu.userRepository.GetByEmail(
+		ctx,
+		database.UsersCollection,
+		input.Email,
+		&existentUser,
+	)
 
-	if err == nil && output.Id != id {
+	if err != nil {
+		return nil, err
+	}
+
+	if existentUser != (domain.UserDatabaseNoPassword{}) && existentUser.Id != id {
 		return nil, errors.New(exception.CodePermission)
 	}
 
-	if updateUser.Password != "" {
+	if input.Password != "" {
 		secret := os.Getenv("ENC_SECRET")
-		encryptionData, err := gu.encryption.Encrypt(ctx, secret, updateUser.Password)
+		encryptionData, err := gu.encryption.Encrypt(ctx, secret, input.Password)
 
-		fmt.Printf("%v", err)
-		updateUser.Password = encryptionData.EncryptedText
-		updateUser.Password = encryptionData.Salt
+		if err != nil {
+			return nil, err
+		}
+
+		input.Password = encryptionData.EncryptedText
+		input.Password = encryptionData.Salt
 	}
 
-	err = gu.crudRepository.UpdateById(ctx, database.UsersCollection, id, &updateUser)
+	input.UpdatedAt = time.Now()
+
+	output := UpdateUserByIdOutput{}
+	err = gu.crudRepository.UpdateById(ctx, database.UsersCollection, id, &input, &output)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var userOutput UpdateUserOutput
-
-	err = gu.crudRepository.GetById(ctx, database.UsersCollection, id, &userOutput)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &userOutput, nil
+	return &output, nil
 }

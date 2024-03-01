@@ -8,17 +8,13 @@ import (
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/packages/logger"
+	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
 )
-
-type MockStructure struct {
-	Id  string `bson:"_id"`
-	Foo string `bson:"foo"`
-}
 
 const (
 	MOCK_DB_NAME   = "foo"
@@ -60,7 +56,7 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 			mtest.FirstBatch,
 			bson.D{
 				{Key: "_id", Value: mockId},
-				{Key: "foo", Value: "bar"},
+				{Key: "first_name", Value: "bar"},
 			},
 		))
 		defer nestedMt.ClearMockResponses()
@@ -68,7 +64,7 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
 		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
 
-		var result MockStructure
+		var result domain.UserDatabaseNoPassword
 
 		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err != nil {
@@ -77,7 +73,7 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		}
 
 		assert.Nil(t, err, "should not return error")
-		assert.Equal(t, "bar", result.Foo, "should return the expected object by id")
+		assert.Equal(t, "bar", result.FirstName, "should return the expected first name")
 	})
 
 	rootMt.Run("should return error when no document is found", func(nestedMt *mtest.T) {
@@ -92,7 +88,7 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
 		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
 
-		var result MockStructure
+		var result domain.UserDatabaseNoPassword
 
 		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err == nil {
@@ -109,7 +105,7 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
 		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
 
-		var result MockStructure
+		var result domain.UserDatabaseNoPassword
 
 		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
 		if err == nil {

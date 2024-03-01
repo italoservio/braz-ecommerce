@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/italoservio/braz_ecommerce/services/users/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,7 +43,7 @@ func (m *MockUserRepositoryInterface) EXPECT() *MockUserRepositoryInterfaceMockR
 }
 
 // GetByEmail mocks base method.
-func (m *MockUserRepositoryInterface) GetByEmail(ctx context.Context, collection, email string, structure any) error {
+func (m *MockUserRepositoryInterface) GetByEmail(ctx context.Context, collection, email string, structure *domain.UserDatabaseNoPassword) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByEmail", ctx, collection, email, structure)
 	ret0, _ := ret[0].(error)

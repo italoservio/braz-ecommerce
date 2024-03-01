@@ -32,7 +32,7 @@ type TestingDependencies_TestUserController struct {
 	mockDeleteUserByIdImpl   *mocks.MockDeleteUserByIdInterface
 	mockCreateUserImpl       *mocks.MockCreateUserInterface
 	mockGetUserPaginatedImpl *mocks.MockGetUserPaginatedInterface
-	mockUpdateUserImpl       *mocks.MockUpdateUserInterface
+	mockUpdateUserByIdImpl   *mocks.MockUpdateUserByIdInterface
 	userController           *http.UserControllerImpl
 }
 
@@ -45,7 +45,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 	mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
 	mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
 	mockGetUserPaginatedImpl := mocks.NewMockGetUserPaginatedInterface(ctrl)
-	mockUpdateUserImpl := mocks.NewMockUpdateUserInterface(ctrl)
+	mockUpdateUserByIdImpl := mocks.NewMockUpdateUserByIdInterface(ctrl)
 
 	mockLoggerImpl.
 		EXPECT().
@@ -59,7 +59,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 		mockDeleteUserByIdImpl,
 		mockCreateUserImpl,
 		mockGetUserPaginatedImpl,
-		mockUpdateUserImpl,
+		mockUpdateUserByIdImpl,
 	)
 
 	return &TestingDependencies_TestUserController{
@@ -70,8 +70,8 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 		mockDeleteUserByIdImpl:   mockDeleteUserByIdImpl,
 		mockCreateUserImpl:       mockCreateUserImpl,
 		mockGetUserPaginatedImpl: mockGetUserPaginatedImpl,
-		mockUpdateUserImpl:       mockUpdateUserImpl,
 		userController:           userController,
+		mockUpdateUserByIdImpl:   mockUpdateUserByIdImpl,
 	}
 }
 
@@ -513,8 +513,8 @@ func TestUserController_UpdateUser(t *testing.T) {
 		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
 	})
 
-	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
-		payload := &app.UpdateUserInput{
+	t.Run("should must raise the http exception when receiving an error from the method do", func(t *testing.T) {
+		payload := &app.UpdateUserByIdInput{
 			FirstName: "username",
 			LastName:  "userlastname",
 			Email:     "foobar@domain.com",
@@ -526,9 +526,9 @@ func TestUserController_UpdateUser(t *testing.T) {
 		body, _ := json.Marshal(payload)
 		reader := strings.NewReader(string(body))
 
-		deps.mockUpdateUserImpl.
+		deps.mockUpdateUserByIdImpl.
 			EXPECT().
-			Do(gomock.Any(), gomock.Any(), "", gomock.Any()).
+			Do(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
@@ -557,7 +557,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 	t.Run("should return empty error when successfully executed on ValidationRequest and updateUser", func(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 
-		payload := &app.UpdateUserInput{
+		payload := &app.UpdateUserByIdInput{
 			FirstName: "username",
 			LastName:  "userlastname",
 			Email:     "foobar@domain.com",
@@ -566,7 +566,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 			UpdatedAt: time.Now(),
 		}
 
-		mockStruct := &app.UpdateUserOutput{
+		mockStruct := &app.UpdateUserByIdOutput{
 			UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
 				DatabaseIdentifier: &database.DatabaseIdentifier{Id: id},
 				User: &domain.User{FirstName: "username",
@@ -580,9 +580,9 @@ func TestUserController_UpdateUser(t *testing.T) {
 		body, _ := json.Marshal(payload)
 		reader := strings.NewReader(string(body))
 
-		deps.mockUpdateUserImpl.
+		deps.mockUpdateUserByIdImpl.
 			EXPECT().
-			Do(gomock.Any(), gomock.Any(), id, gomock.Any()).
+			Do(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
@@ -600,7 +600,7 @@ func TestUserController_UpdateUser(t *testing.T) {
 			t.Log(err.Error())
 			t.Fail()
 		}
-		var httpResponse app.UpdateUserOutput
+		var httpResponse app.UpdateUserByIdOutput
 		json.Unmarshal(bytes, &httpResponse)
 
 		assert.Equal(t, id, httpResponse.Id, "should return expected response")

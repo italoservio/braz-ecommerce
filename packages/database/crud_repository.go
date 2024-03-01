@@ -35,7 +35,8 @@ type CrudRepositoryInterface interface {
 		ctx context.Context,
 		collection string,
 		id string,
-		structure any,
+		inputStructure any,
+		outputStructure any,
 	) error
 	GetPaginated(
 		ctx context.Context,
@@ -141,7 +142,8 @@ func (cr *CrudRepository) UpdateById(
 	ctx context.Context,
 	collection string,
 	id string,
-	structure any,
+	inputStructure any,
+	outputStructure any,
 ) error {
 	coll := cr.database.Collection(collection)
 
@@ -154,23 +156,25 @@ func (cr *CrudRepository) UpdateById(
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	document, err := ParseToDocument(structure)
+	document, err := ParseToDocument(inputStructure)
 	if err != nil {
 		cr.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	bson := bson.D{{Key: "$set", Value: document}}
+	err = coll.FindOneAndUpdate(
+		timeout,
+		bson.M{"_id": objectId},
+		bson.D{{Key: "$set", Value: document}},
+	).Decode(outputStructure)
 
-	if _, err := coll.UpdateByID(timeout, objectId, bson); err != nil {
+	if err != nil {
 		cr.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeDatabaseFailed)
 	}
 
 	return nil
 }
-
-type PaginatedOutput interface{}
 
 func (cr *CrudRepository) GetPaginated(
 	ctx context.Context,
