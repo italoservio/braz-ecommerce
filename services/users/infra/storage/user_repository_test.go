@@ -42,12 +42,29 @@ func TestUserRepository_NewUserRepository(t *testing.T) {
 	})
 }
 
-func TestCrudRepository_GetByEmail(t *testing.T) {
+type TestingDependencies_TestGetByEmail struct {
+	ctx            context.Context
+	mockDB         *database.Database
+	userRepository *storage.UserRepositoryImpl
+}
+
+func BeforeEach_TestGetByEmail(mt *mtest.T) *TestingDependencies_TestGetByEmail {
 	ctx := context.TODO()
-	logger := logger.NewLogger()
+	mockDB := &database.Database{Database: mt.Client.Database(MOCK_DB_NAME)}
+	userRepository := storage.NewUserRepositoryImpl(logger.NewLogger(), mockDB)
+
+	return &TestingDependencies_TestGetByEmail{
+		ctx:            ctx,
+		mockDB:         mockDB,
+		userRepository: userRepository,
+	}
+}
+
+func TestUserRepository_GetByEmail(t *testing.T) {
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	rootMt.Run("should return the document when call database with success", func(nestedMt *mtest.T) {
+		deps := BeforeEach_TestGetByEmail(nestedMt)
 		mockId := primitive.NewObjectID()
 
 		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
@@ -61,12 +78,14 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		))
 		defer nestedMt.ClearMockResponses()
 
-		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
-
 		var result domain.UserDatabaseNoPassword
 
-		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
+		err := deps.userRepository.GetByEmail(
+			deps.ctx,
+			MOCK_COLL_NAME,
+			"",
+			&result,
+		)
 		if err != nil {
 			t.Log(err.Error())
 			t.Fail()
@@ -76,7 +95,8 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 		assert.Equal(t, "bar", result.FirstName, "should return the expected first name")
 	})
 
-	rootMt.Run("should return error when no document is found", func(nestedMt *mtest.T) {
+	rootMt.Run("should return empty when no document is found", func(nestedMt *mtest.T) {
+		deps := BeforeEach_TestGetByEmail(nestedMt)
 		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
 			0,
 			MOCK_NS,
@@ -85,29 +105,35 @@ func TestCrudRepository_GetByEmail(t *testing.T) {
 
 		defer nestedMt.ClearMockResponses()
 
-		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
-
 		var result domain.UserDatabaseNoPassword
 
-		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
-		if err == nil {
+		err := deps.userRepository.GetByEmail(
+			deps.ctx,
+			MOCK_COLL_NAME,
+			"",
+			&result,
+		)
+		if err != nil {
 			t.Fail()
 		}
 
-		assert.Equal(t, exception.CodeNotFound, err.Error(), "should return the expected error")
+		assert.Equal(t, (domain.UserDatabaseNoPassword{}), result, "should return empty result")
 	})
 
 	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
+		deps := BeforeEach_TestGetByEmail(nestedMt)
+
 		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
 		defer nestedMt.ClearMockResponses()
 
-		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := storage.NewUserRepositoryImpl(logger, mockDB)
-
 		var result domain.UserDatabaseNoPassword
 
-		err := crudRepository.GetByEmail(ctx, MOCK_COLL_NAME, "", &result)
+		err := deps.userRepository.GetByEmail(
+			deps.ctx,
+			MOCK_COLL_NAME,
+			"",
+			&result,
+		)
 		if err == nil {
 			t.Fail()
 		}
