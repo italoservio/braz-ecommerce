@@ -2,7 +2,7 @@ package http
 
 import (
 	"errors"
-	"log/slog"
+
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -81,7 +81,7 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	body := &app.UpdateUserByIdInput{}
 
 	if err := c.BodyParser(&body); err != nil {
-		slog.Error(err.Error())
+		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
