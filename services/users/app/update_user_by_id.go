@@ -14,7 +14,7 @@ import (
 )
 
 type UpdateUserByIdInterface interface {
-	Do(ctx context.Context, id string, updateUser *UpdateUserByIdInput) (*UpdateUserByIdOutput, error)
+	Do(ctx context.Context, id string, input *UpdateUserByIdInput) (*UpdateUserByIdOutput, error)
 }
 
 type UpdateUserByIdImpl struct {
