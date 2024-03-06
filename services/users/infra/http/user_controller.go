@@ -18,7 +18,7 @@ type UserControllerImpl struct {
 	deleteUserByIdImpl   app.DeleteUserByIdInterface
 	createUserImpl       app.CreateUserInterface
 	getUserPaginatedImpl app.GetUserPaginatedInterface
-	updateUserImpl       app.UpdateUserByIdInterface
+	updateUserByIdImpl   app.UpdateUserByIdInterface
 }
 
 func NewUserControllerImpl(
@@ -27,15 +27,15 @@ func NewUserControllerImpl(
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
 	getUserPaginatedImpl app.GetUserPaginatedInterface,
-	updateUserImpl app.UpdateUserByIdInterface,
+	updateUserByIdImpl app.UpdateUserByIdInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
 		logger:               logger,
 		getUserByIdImpl:      getUserByIdImpl,
 		deleteUserByIdImpl:   deleteUserByIdImpl,
 		createUserImpl:       createUserImpl,
-		updateUserImpl:       updateUserImpl,
 		getUserPaginatedImpl: getUserPaginatedImpl,
+		updateUserByIdImpl:   updateUserByIdImpl,
 	}
 }
 
@@ -87,7 +87,7 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
-	updateUser, err := uc.updateUserImpl.Do(ctx, id, &app.UpdateUserByIdInput{
+	output, err := uc.updateUserByIdImpl.Do(ctx, id, &app.UpdateUserByIdInput{
 		FirstName: body.FirstName,
 		LastName:  body.LastName,
 		Email:     body.Email,
@@ -99,7 +99,7 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(updateUser)
+	return c.JSON(output)
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
