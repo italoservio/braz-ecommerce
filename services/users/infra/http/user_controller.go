@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,7 @@ type UserControllerImpl struct {
 	deleteUserByIdImpl   app.DeleteUserByIdInterface
 	createUserImpl       app.CreateUserInterface
 	getUserPaginatedImpl app.GetUserPaginatedInterface
+	updateUserByIdImpl   app.UpdateUserByIdInterface
 }
 
 func NewUserControllerImpl(
@@ -25,6 +27,7 @@ func NewUserControllerImpl(
 	deleteUserByIdImpl app.DeleteUserByIdInterface,
 	createUserImpl app.CreateUserInterface,
 	getUserPaginatedImpl app.GetUserPaginatedInterface,
+	updateUserByIdImpl app.UpdateUserByIdInterface,
 ) *UserControllerImpl {
 	return &UserControllerImpl{
 		logger:               logger,
@@ -32,6 +35,7 @@ func NewUserControllerImpl(
 		deleteUserByIdImpl:   deleteUserByIdImpl,
 		createUserImpl:       createUserImpl,
 		getUserPaginatedImpl: getUserPaginatedImpl,
+		updateUserByIdImpl:   updateUserByIdImpl,
 	}
 }
 
@@ -70,6 +74,32 @@ func (uc *UserControllerImpl) CreateUser(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(output)
+}
+
+func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
+	ctx := c.Context()
+	body := &app.UpdateUserByIdInput{}
+
+	if err := c.BodyParser(&body); err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	id := c.Params("id")
+
+	output, err := uc.updateUserByIdImpl.Do(ctx, id, &app.UpdateUserByIdInput{
+		FirstName: body.FirstName,
+		LastName:  body.LastName,
+		Email:     body.Email,
+		Type:      body.Type,
+		Password:  body.Password,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(output)
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {

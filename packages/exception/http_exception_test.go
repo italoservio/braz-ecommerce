@@ -59,4 +59,11 @@ func TestException_errorCodeToStruct(t *testing.T) {
 		assert.Equal(t, structure.StatusCode, 500)
 		assert.Equal(t, structure.ErrorMessage, "An expected error occurred and the server could not deal with it")
 	})
+
+	t.Run("should parse error code EPERMISSION", func(t *testing.T) {
+		structure := errorCodeToStruct(CodePermission)
+
+		assert.Equal(t, structure.StatusCode, 403)
+		assert.Equal(t, structure.ErrorMessage, "User not allowed to perform this action")
+	})
 }

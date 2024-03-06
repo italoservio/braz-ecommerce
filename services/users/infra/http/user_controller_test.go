@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/italoservio/braz_ecommerce/packages/database"
@@ -31,6 +32,7 @@ type TestingDependencies_TestUserController struct {
 	mockDeleteUserByIdImpl   *mocks.MockDeleteUserByIdInterface
 	mockCreateUserImpl       *mocks.MockCreateUserInterface
 	mockGetUserPaginatedImpl *mocks.MockGetUserPaginatedInterface
+	mockUpdateUserByIdImpl   *mocks.MockUpdateUserByIdInterface
 	userController           *http.UserControllerImpl
 }
 
@@ -43,6 +45,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 	mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
 	mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)
 	mockGetUserPaginatedImpl := mocks.NewMockGetUserPaginatedInterface(ctrl)
+	mockUpdateUserByIdImpl := mocks.NewMockUpdateUserByIdInterface(ctrl)
 
 	mockLoggerImpl.
 		EXPECT().
@@ -56,6 +59,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 		mockDeleteUserByIdImpl,
 		mockCreateUserImpl,
 		mockGetUserPaginatedImpl,
+		mockUpdateUserByIdImpl,
 	)
 
 	return &TestingDependencies_TestUserController{
@@ -67,6 +71,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 		mockCreateUserImpl:       mockCreateUserImpl,
 		mockGetUserPaginatedImpl: mockGetUserPaginatedImpl,
 		userController:           userController,
+		mockUpdateUserByIdImpl:   mockUpdateUserByIdImpl,
 	}
 }
 
@@ -477,5 +482,127 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 		assert.Equal(t, 1, httpResponse.Page, "should return expected response")
 		assert.Equal(t, 10, httpResponse.PerPage, "should return expected response")
 		assert.Equal(t, "123", items[0].Id, "should return expected response")
+	})
+}
+
+func TestUserController_UpdateUser(t *testing.T) {
+	deps := BeforeEach_TestUserController(t)
+	defer deps.ctrl.Finish()
+
+	t.Run("should mount the http exception when there is an error in BodyParser", func(t *testing.T) {
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Patch("/api/v1/users/", deps.userController.UpdateUserById)
+		req := httptest.NewRequest("PATCH", "/api/v1/users/", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should must raise the http exception when receiving an error from the method do", func(t *testing.T) {
+		payload := &app.UpdateUserByIdInput{
+			FirstName: "username",
+			LastName:  "userlastname",
+			Email:     "foobar@domain.com",
+			Type:      "admin",
+			Password:  "something",
+			UpdatedAt: time.Now(),
+		}
+
+		body, _ := json.Marshal(payload)
+		reader := strings.NewReader(string(body))
+
+		deps.mockUpdateUserByIdImpl.
+			EXPECT().
+			Do(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil, errors.New(exception.CodeDatabaseFailed))
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Patch("/api/v1/users/", deps.userController.UpdateUserById)
+		req := httptest.NewRequest("PATCH", "/api/v1/users/", io.Reader(reader))
+		req.Header.Set("Content-Type", "application/json")
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 500, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Failed to communicate with database", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should return empty error when successfully executed on ValidationRequest and updateUser", func(t *testing.T) {
+		id := primitive.NewObjectID().Hex()
+
+		payload := &app.UpdateUserByIdInput{
+			FirstName: "username",
+			LastName:  "userlastname",
+			Email:     "foobar@domain.com",
+			Type:      "admin",
+			Password:  "something",
+			UpdatedAt: time.Now(),
+		}
+
+		mockStruct := &app.UpdateUserByIdOutput{
+			UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
+				DatabaseIdentifier: &database.DatabaseIdentifier{Id: id},
+				User: &domain.User{FirstName: "username",
+					LastName: "userlastname",
+					Email:    "foobar@domain.com",
+					Type:     "admin"},
+				DatabaseTimestamp: &database.DatabaseTimestamp{CreatedAt: time.Now()},
+			},
+		}
+
+		body, _ := json.Marshal(payload)
+		reader := strings.NewReader(string(body))
+
+		deps.mockUpdateUserByIdImpl.
+			EXPECT().
+			Do(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(mockStruct, nil)
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Patch("/api/v1/users/:id", deps.userController.UpdateUserById)
+		req := httptest.NewRequest("PATCH", fmt.Sprintf("/api/v1/users/%s", id), io.Reader(reader))
+		req.Header.Set("Content-Type", "application/json")
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+		var httpResponse app.UpdateUserByIdOutput
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, id, httpResponse.Id, "should return expected response")
 	})
 }

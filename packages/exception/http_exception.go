@@ -17,6 +17,7 @@ const (
 	CodeDatabaseFailed   = "EDBFAILURE"
 	CodeValidationFailed = "EVALIDATION"
 	CodeInternal         = "EINTERNAL"
+	CodePermission       = "EPERMISSION"
 )
 
 func Http(code string) *HTTPException {
@@ -25,6 +26,7 @@ func Http(code string) *HTTPException {
 		(CodeDatabaseFailed):   true,
 		(CodeValidationFailed): true,
 		(CodeInternal):         true,
+		(CodePermission):       true,
 	}
 
 	if !codes[code] {
@@ -63,6 +65,10 @@ func errorCodeToStruct(code string) *HTTPException {
 		response.StatusMessage = "Internal Server Error"
 		response.StatusCode = http.StatusInternalServerError
 		response.ErrorMessage = "An expected error occurred and the server could not deal with it"
+	case CodePermission:
+		response.StatusMessage = "Forbidden"
+		response.StatusCode = http.StatusForbidden
+		response.ErrorMessage = "User not allowed to perform this action"
 	}
 
 	return &response

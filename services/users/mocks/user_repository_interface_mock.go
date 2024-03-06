@@ -10,6 +10,10 @@
 package mocks
 
 import (
+	context "context"
+	reflect "reflect"
+
+	domain "github.com/italoservio/braz_ecommerce/services/users/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -36,4 +40,18 @@ func NewMockUserRepositoryInterface(ctrl *gomock.Controller) *MockUserRepository
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserRepositoryInterface) EXPECT() *MockUserRepositoryInterfaceMockRecorder {
 	return m.recorder
+}
+
+// GetByEmail mocks base method.
+func (m *MockUserRepositoryInterface) GetByEmail(ctx context.Context, collection, email string, structure *domain.UserDatabaseNoPassword) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByEmail", ctx, collection, email, structure)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetByEmail indicates an expected call of GetByEmail.
+func (mr *MockUserRepositoryInterfaceMockRecorder) GetByEmail(ctx, collection, email, structure any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockUserRepositoryInterface)(nil).GetByEmail), ctx, collection, email, structure)
 }

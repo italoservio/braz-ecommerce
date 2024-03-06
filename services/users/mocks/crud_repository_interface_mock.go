@@ -99,38 +99,15 @@ func (mr *MockCrudRepositoryInterfaceMockRecorder) GetPaginated(ctx, collection,
 }
 
 // UpdateById mocks base method.
-func (m *MockCrudRepositoryInterface) UpdateById(ctx context.Context, collection, id string, structure any) error {
+func (m *MockCrudRepositoryInterface) UpdateById(ctx context.Context, collection, id string, inputStructure, outputStructure any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateById", ctx, collection, id, structure)
+	ret := m.ctrl.Call(m, "UpdateById", ctx, collection, id, inputStructure, outputStructure)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateById indicates an expected call of UpdateById.
-func (mr *MockCrudRepositoryInterfaceMockRecorder) UpdateById(ctx, collection, id, structure any) *gomock.Call {
+func (mr *MockCrudRepositoryInterfaceMockRecorder) UpdateById(ctx, collection, id, inputStructure, outputStructure any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).UpdateById), ctx, collection, id, structure)
-}
-
-// MockPaginatedOutput is a mock of PaginatedOutput interface.
-type MockPaginatedOutput struct {
-	ctrl     *gomock.Controller
-	recorder *MockPaginatedOutputMockRecorder
-}
-
-// MockPaginatedOutputMockRecorder is the mock recorder for MockPaginatedOutput.
-type MockPaginatedOutputMockRecorder struct {
-	mock *MockPaginatedOutput
-}
-
-// NewMockPaginatedOutput creates a new mock instance.
-func NewMockPaginatedOutput(ctrl *gomock.Controller) *MockPaginatedOutput {
-	mock := &MockPaginatedOutput{ctrl: ctrl}
-	mock.recorder = &MockPaginatedOutputMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockPaginatedOutput) EXPECT() *MockPaginatedOutputMockRecorder {
-	return m.recorder
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateById", reflect.TypeOf((*MockCrudRepositoryInterface)(nil).UpdateById), ctx, collection, id, inputStructure, outputStructure)
 }

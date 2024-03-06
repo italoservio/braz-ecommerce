@@ -243,68 +243,19 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 	logger := logger.NewLogger()
 	rootMt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
-	rootMt.Run("should return nil when call database with success", func(nestedMt *mtest.T) {
-
-		mockId := primitive.NewObjectID().Hex()
-
-		nestedMt.AddMockResponses(bson.D{
-			{Key: "ok", Value: 1},
-			{Key: "nModified", Value: 1},
-		})
-		defer nestedMt.ClearMockResponses()
-
-		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(logger, mockDB)
-
-		err := crudRepository.UpdateById(
-			ctx,
-			MOCK_COLL_NAME,
-			mockId,
-			MockStructure{Foo: "bar", Id: mockId},
-		)
-		if err != nil {
-			t.Log(err.Error())
-			t.Fail()
-		}
-
-		assert.Nil(t, err, "should not return error")
-	})
-
-	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
-
-		mockId := primitive.NewObjectID().Hex()
-
-		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
-		defer nestedMt.ClearMockResponses()
-
-		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
-		crudRepository := database.NewCrudRepository(logger, mockDB)
-
-		err := crudRepository.UpdateById(
-			ctx,
-			MOCK_COLL_NAME,
-			mockId,
-			MockStructure{Foo: "bar", Id: mockId},
-		)
-		if err == nil {
-			t.Fail()
-		}
-
-		assert.NotNil(t, err, "should return database call error")
-	})
-
 	rootMt.Run("should return error when wrong object id is provided", func(nestedMt *mtest.T) {
-
 		mockWrongId := "something_wrong"
 
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
 		crudRepository := database.NewCrudRepository(logger, mockDB)
 
+		var output MockStructure
 		err := crudRepository.UpdateById(
 			ctx,
 			MOCK_COLL_NAME,
 			mockWrongId,
 			MockStructure{Foo: "bar", Id: mockWrongId},
+			&output,
 		)
 		if err == nil {
 			t.Fail()
@@ -325,12 +276,71 @@ func TestCrudRepository_UpdateById(t *testing.T) {
 			MOCK_COLL_NAME,
 			mockId,
 			"something_wrong",
+			"something_wrong",
 		)
 		if err == nil {
 			t.Fail()
 		}
 
 		assert.NotNil(t, err, "should return parse error")
+	})
+
+	rootMt.Run("should return error when failed to call database", func(nestedMt *mtest.T) {
+		mockId := primitive.NewObjectID().Hex()
+
+		nestedMt.AddMockResponses(bson.D{{Key: "ok", Value: 0}})
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(logger, mockDB)
+
+		var output MockStructure
+		err := crudRepository.UpdateById(
+			ctx,
+			MOCK_COLL_NAME,
+			mockId,
+			MockStructure{Foo: "bar", Id: mockId},
+			&output,
+		)
+		if err == nil {
+			t.Fail()
+		}
+
+		assert.NotNil(t, err, "should return database call error")
+	})
+
+	rootMt.Run("should return nil and fill struct when call database with success", func(nestedMt *mtest.T) {
+		mockId := primitive.NewObjectID().Hex()
+
+		docs := bson.D{
+			{Key: "_id", Value: mockId},
+			{Key: "foo", Value: "bar"},
+		}
+
+		nestedMt.AddMockResponses(mtest.CreateSuccessResponse(
+			primitive.E{Key: "ok", Value: 1},
+			primitive.E{Key: "value", Value: docs},
+		))
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(logger, mockDB)
+
+		var output MockStructure
+		err := crudRepository.UpdateById(
+			ctx,
+			MOCK_COLL_NAME,
+			mockId,
+			MockStructure{Foo: "bar", Id: mockId},
+			&output,
+		)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		assert.Nil(t, err, "should not return error")
+		assert.Equal(t, "bar", output.Foo, "should return the expected object")
 	})
 }
 
