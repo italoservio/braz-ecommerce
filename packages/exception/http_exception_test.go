@@ -63,7 +63,7 @@ func TestException_errorCodeToStruct(t *testing.T) {
 	t.Run("should parse error code EPERMISSION", func(t *testing.T) {
 		structure := errorCodeToStruct(CodePermission)
 
-		assert.Equal(t, structure.StatusCode, 401)
+		assert.Equal(t, structure.StatusCode, 403)
 		assert.Equal(t, structure.ErrorMessage, "User not allowed to perform this action")
 	})
 }

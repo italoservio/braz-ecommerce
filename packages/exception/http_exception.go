@@ -66,8 +66,8 @@ func errorCodeToStruct(code string) *HTTPException {
 		response.StatusCode = http.StatusInternalServerError
 		response.ErrorMessage = "An expected error occurred and the server could not deal with it"
 	case CodePermission:
-		response.StatusMessage = "Unauthorized"
-		response.StatusCode = http.StatusUnauthorized
+		response.StatusMessage = "Forbidden"
+		response.StatusCode = http.StatusForbidden
 		response.ErrorMessage = "User not allowed to perform this action"
 	}
 
