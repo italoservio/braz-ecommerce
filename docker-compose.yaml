@@ -1,6 +1,40 @@
 version: '3'
 
 services:
+  braz_aws:
+    image: localstack/localstack:3.2.0-amd64
+    container_name: braz_aws
+    healthcheck:
+      test: |
+        bash -c 'aws --endpoint-url=http://localhost:4566 s3api list-buckets >> /dev/null'
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    ports: ["4566:4566"]
+    environment:
+      AWS_DEFAULT_REGION: "sa-east-1"
+      AWS_ACCESS_KEY_ID: "mock_access_key"
+      AWS_SECRET_ACCESS_KEY: "mock_secret_key"
+      DEBUG: 0
+      LS_LOG: "error"
+
+  braz_terraform:
+    image: hashicorp/terraform:1.7.4
+    container_name: braz_terraform
+    depends_on:
+      braz_aws:
+        condition: service_healthy
+    environment:
+      TF_DATA_DIR: "/app/.terraform/.state"
+      TF_VAR_aws_access_key_id: "mock_access_key"
+      TF_VAR_aws_secret_access_key: "mock_secret_key"
+      TF_VAR_aws_endpoint: "http://braz_aws:4566"
+    volumes: [".terraform:/app/.terraform"]
+    working_dir: /app/.terraform/modules/main
+    entrypoint: ["/bin/sh"]
+    command: -c 'terraform init -var-file="../../tfvars/local.tfvars" && terraform apply -auto-approve -var-file="../../tfvars/local.tfvars" && tail -f /dev/null'
+
   braz_databases:
     image: mongo:6.0.13-jammy
     container_name: braz_databases
@@ -23,8 +57,8 @@ services:
     command: mongod --quiet --logpath /dev/null
 
   braz_user_microservice:
-    image: golang:1.21.6-bullseye
-    depends_on: ["braz_databases"]
+    image: golang:1.22.1-bullseye
+    depends_on: ["braz_databases", "braz_terraform"]
     container_name: braz_user_microservice
     healthcheck:
       test: |
@@ -40,6 +74,6 @@ services:
       DB_URI: "mongodb://root:root@braz_databases:27017/"
       DB_NAME: "users"
       ENC_SECRET: "2zmXvZa93wneR1w1L63i9cAUzSIzPdd6"
+      AWS_ENDPOINT: "http://braz_aws:4566"
     working_dir: /app
     command: bash -c 'export SERVICE_FOLDER=users && make local_docker_cmd'
-    

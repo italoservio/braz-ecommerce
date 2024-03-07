@@ -1,3 +1,6 @@
 .coverage/
 .idea/
+.vscode/
 tmp/
+
+.terraform/.state
