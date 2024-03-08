@@ -9,7 +9,7 @@ import (
 )
 
 type GetUserByIdInterface interface {
-	Do(ctx context.Context, id string) (*GetUserByIdOutput, error)
+	Do(ctx context.Context, id string, deleted bool) (*GetUserByIdOutput, error)
 }
 
 type GetUserByIdImpl struct {
@@ -28,10 +28,11 @@ type GetUserByIdOutput struct {
 	*domain.UserDatabaseNoPassword `bson:",inline"`
 }
 
-func (gu *GetUserByIdImpl) Do(ctx context.Context, id string) (*GetUserByIdOutput, error) {
+func (gu *GetUserByIdImpl) Do(ctx context.Context, id string, deleted bool) (*GetUserByIdOutput, error) {
 	var output GetUserByIdOutput
 
-	err := gu.crudRepository.GetById(ctx, database.UsersCollection, id, &output)
+	err := gu.crudRepository.GetById(ctx, database.UsersCollection, id, deleted, &output)
+
 	if err != nil {
 		return nil, err
 	}

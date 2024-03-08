@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
@@ -10,7 +11,7 @@ import (
 )
 
 type GetUserPaginatedInterface interface {
-	Do(ctx context.Context, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
+	Do(ctx context.Context, deleted bool, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
 }
 
 type GetUserPaginatedImpl struct {
@@ -38,15 +39,17 @@ type GetUserPaginatedOutput struct {
 
 func (gup *GetUserPaginatedImpl) Do(
 	ctx context.Context,
+	deleted bool,
 	input *GetUserPaginatedInput,
 ) (*database.PaginatedSlice[GetUserPaginatedOutput], error) {
 	sorting := mountSorting()
 	projection := mountProjection()
-	filters, err := mountFilters(input)
+	filters, err := mountFilters(input, deleted)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("%v", filters)
 	users := []GetUserPaginatedOutput{}
 
 	err = gup.crudRepository.GetPaginated(
@@ -72,7 +75,7 @@ func (gup *GetUserPaginatedImpl) Do(
 	return output, nil
 }
 
-func mountFilters(input *GetUserPaginatedInput) (map[string]any, error) {
+func mountFilters(input *GetUserPaginatedInput, deleted bool) (map[string]any, error) {
 	filters := make(map[string]any)
 	if len(input.Emails) > 0 {
 		filters["email"] = input.Emails
@@ -85,6 +88,10 @@ func mountFilters(input *GetUserPaginatedInput) (map[string]any, error) {
 		}
 
 		filters["_id"] = ids
+	}
+
+	if !deleted {
+		filters["deleted_at"] = nil
 	}
 
 	return filters, nil

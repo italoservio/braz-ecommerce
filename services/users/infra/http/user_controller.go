@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"strconv"
 
 	"net/http"
 
@@ -102,11 +103,35 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	return c.JSON(output)
 }
 
+type GetUserPayload struct {
+	Deleted string `query:"deleted" validate:"required"`
+}
+
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	id := c.Params("id")
+	queryParams := GetUserPayload{}
 
-	user, err := uc.getUserByIdImpl.Do(ctx, id)
+	err := c.QueryParser(&queryParams)
+
+	if err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	if err := validation.ValidateRequest(c, queryParams); err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	deleted, err := strconv.ParseBool(queryParams.Deleted)
+
+	if err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	user, err := uc.getUserByIdImpl.Do(ctx, id, deleted)
 	if err != nil {
 		return err
 	}
@@ -132,6 +157,7 @@ type GetUserPaginatedPayload struct {
 	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
 	Emails  []string `query:"email" validate:"omitempty,dive,email"`
 	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
+	Deleted string   `query:"deleted" validate:"required"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
@@ -149,7 +175,14 @@ func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	output, err := uc.getUserPaginatedImpl.Do(ctx, &app.GetUserPaginatedInput{
+	deleted, err := strconv.ParseBool(queryParams.Deleted)
+
+	if err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	output, err := uc.getUserPaginatedImpl.Do(ctx, deleted, &app.GetUserPaginatedInput{
 		Page:    queryParams.Page,
 		PerPage: queryParams.PerPage,
 		Emails:  queryParams.Emails,

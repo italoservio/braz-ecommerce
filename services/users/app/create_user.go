@@ -61,6 +61,23 @@ func (gu *CreateUserImpl) Do(ctx context.Context, input *CreateUserInput) (*Crea
 		return nil, errors.New(exception.CodeInternal)
 	}
 
+	var existentUser domain.UserDatabaseNoPassword
+
+	err = gu.userRepository.GetByEmail(
+		ctx,
+		database.UsersCollection,
+		input.Email,
+		&existentUser,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if existentUser != (domain.UserDatabaseNoPassword{}) {
+		return nil, errors.New(exception.CodePermission)
+	}
+
 	id, err := gu.crudRepository.CreateOne(ctx, database.UsersCollection, &CreateUserDatabase{
 		User: domain.User{
 			Type:      input.Type,
