@@ -60,7 +60,7 @@ func (gu *UpdateUserByIdImpl) Do(
 	err := gu.crudRepository.GetById(ctx, database.UsersCollection, id, false, &output)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New(exception.CodePermission)
 	}
 
 	if input.Email != "" {

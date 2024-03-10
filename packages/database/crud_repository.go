@@ -174,6 +174,7 @@ func (cr *CrudRepository) UpdateById(
 		timeout,
 		bson.M{"_id": objectId},
 		bson.D{{Key: "$set", Value: document}},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(outputStructure)
 
 	if err != nil {
