@@ -10,3 +10,4 @@
 * BRAZ-9: Get user paginated Endpoint
 * BRAZ-34: Introduce logger with correlation Id
 * BRAZ-6: Update user Endpoint
+* BRAZ-35: Stop Bringing deleted rows

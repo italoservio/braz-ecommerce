@@ -79,17 +79,94 @@ func TestUserController_GetUserById(t *testing.T) {
 	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
+	t.Run("should mount the http exception when there is an error parsing query params", func(t *testing.T) {
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
+
+		req := httptest.NewRequest("GET", "/api/v1/users/123456?deleted=falseee", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should mount the http exception when there is an error validating query params", func(t *testing.T) {
+		id := primitive.NewObjectID().Hex()
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
+	t.Run("should raise http exception when there is an error when passing to boolean", func(t *testing.T) {
+		id := primitive.NewObjectID().Hex()
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s?deleted=falssee", id), nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 		deps.mockGetUserByIdImpl.
 			EXPECT().
-			Do(gomock.Any(), id).
+			Do(gomock.Any(), id, false).
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
-		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s?deleted=false", id), nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -119,13 +196,13 @@ func TestUserController_GetUserById(t *testing.T) {
 		}
 
 		deps.mockGetUserByIdImpl.EXPECT().
-			Do(gomock.Any(), id).
+			Do(gomock.Any(), id, false).
 			Times(1).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New()
 		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
-		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s?deleted=false", id), nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -385,6 +462,33 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 
 	})
 
+	t.Run("should mount the http exception when there is an error parsing ParseBool", func(t *testing.T) {
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
+
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10&deleted=falsee", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+
+	})
+
 	t.Run("should mount the http exception when there is an error validating query params", func(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
@@ -412,14 +516,14 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any(), gomock.Any()).
+			Do(gomock.Any(), false, gomock.Any()).
 			Times(1).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10&deleted=false", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -453,14 +557,14 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any(), gomock.Any()).
+			Do(gomock.Any(), false, gomock.Any()).
 			Times(1).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10&deleted=false", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {

@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"strconv"
 
 	"net/http"
 
@@ -104,7 +103,7 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 }
 
 type GetUserPayload struct {
-	Deleted string `query:"deleted" validate:"required"`
+	Deleted bool `query:"deleted"`
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
@@ -124,14 +123,12 @@ func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	deleted, err := strconv.ParseBool(queryParams.Deleted)
-
 	if err != nil {
 		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	user, err := uc.getUserByIdImpl.Do(ctx, id, deleted)
+	user, err := uc.getUserByIdImpl.Do(ctx, id, queryParams.Deleted)
 	if err != nil {
 		return err
 	}
@@ -157,7 +154,7 @@ type GetUserPaginatedPayload struct {
 	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
 	Emails  []string `query:"email" validate:"omitempty,dive,email"`
 	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
-	Deleted string   `query:"deleted" validate:"required"`
+	Deleted bool     `query:"deleted" validate:"required"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
@@ -175,14 +172,12 @@ func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	deleted, err := strconv.ParseBool(queryParams.Deleted)
-
 	if err != nil {
 		uc.logger.WithCtx(ctx).Error(err.Error())
-		return errors.New(exception.CodeValidationFailed)
+		return errors.New(exception.CodeInternal)
 	}
 
-	output, err := uc.getUserPaginatedImpl.Do(ctx, deleted, &app.GetUserPaginatedInput{
+	output, err := uc.getUserPaginatedImpl.Do(ctx, queryParams.Deleted, &app.GetUserPaginatedInput{
 		Page:    queryParams.Page,
 		PerPage: queryParams.PerPage,
 		Emails:  queryParams.Emails,

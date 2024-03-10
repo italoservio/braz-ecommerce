@@ -43,16 +43,16 @@ func (m *MockGetUserByIdInterface) EXPECT() *MockGetUserByIdInterfaceMockRecorde
 }
 
 // Do mocks base method.
-func (m *MockGetUserByIdInterface) Do(ctx context.Context, id string) (*app.GetUserByIdOutput, error) {
+func (m *MockGetUserByIdInterface) Do(ctx context.Context, id string, deleted bool) (*app.GetUserByIdOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", ctx, id)
+	ret := m.ctrl.Call(m, "Do", ctx, id, deleted)
 	ret0, _ := ret[0].(*app.GetUserByIdOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockGetUserByIdInterfaceMockRecorder) Do(ctx, id any) *gomock.Call {
+func (mr *MockGetUserByIdInterfaceMockRecorder) Do(ctx, id, deleted any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockGetUserByIdInterface)(nil).Do), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockGetUserByIdInterface)(nil).Do), ctx, id, deleted)
 }
