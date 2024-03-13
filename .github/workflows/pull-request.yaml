@@ -28,8 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            CHANGELOG.md
+          sparse-checkout: CHANGELOG.md
 
       - name: Validate CHANGELOG
         id: validate_changelog
@@ -85,3 +84,25 @@ jobs:
           chmod +x script.sh
 
           docker exec golang /bin/bash -c "/app/script.sh"
+
+  Terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: .terraform
+          
+      - name: Setup Terraform
+        id: setup_terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.4"
+
+      - name: Run Terraform Fmt
+        id: run_terraform_fmt
+        working-directory: .terraform/modules/main
+        run: terraform fmt -check
