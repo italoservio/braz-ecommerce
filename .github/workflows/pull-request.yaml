@@ -103,6 +103,6 @@ jobs:
           terraform_version: "1.7.4"
 
       - name: Run Terraform Fmt
-        id: run_terraform_plan
+        id: run_terraform_fmt
         working-directory: .terraform/modules/main
         run: terraform fmt -check
