@@ -102,14 +102,14 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	return c.JSON(output)
 }
 
-type GetUserPayload struct {
+type GetUserByIdPayload struct {
 	Deleted bool `query:"deleted"`
 }
 
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	id := c.Params("id")
-	queryParams := GetUserPayload{}
+	queryParams := GetUserByIdPayload{}
 
 	err := c.QueryParser(&queryParams)
 
