@@ -56,7 +56,7 @@ func TestGetUserById_Do(t *testing.T) {
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := deps.getUserByIdImpl.Do(deps.ctx, id, false)
+		_, err := deps.getUserByIdImpl.Do(deps.ctx, &app.GetUserByIdInput{Id: id, Deleted: false})
 		if err == nil {
 			t.Fail()
 		}
@@ -74,7 +74,7 @@ func TestGetUserById_Do(t *testing.T) {
 			Times(1).
 			Return(nil)
 
-		_, err := deps.getUserByIdImpl.Do(deps.ctx, id, false)
+		_, err := deps.getUserByIdImpl.Do(deps.ctx, &app.GetUserByIdInput{Id: id, Deleted: false})
 		if err != nil {
 			log.Fatal(err)
 		}

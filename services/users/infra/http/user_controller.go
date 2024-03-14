@@ -128,7 +128,10 @@ func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	user, err := uc.getUserByIdImpl.Do(ctx, id, queryParams.Deleted)
+	user, err := uc.getUserByIdImpl.Do(ctx, &app.GetUserByIdInput{
+		Id:      id,
+		Deleted: queryParams.Deleted,
+	})
 	if err != nil {
 		return err
 	}

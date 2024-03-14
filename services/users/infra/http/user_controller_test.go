@@ -160,7 +160,7 @@ func TestUserController_GetUserById(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 		deps.mockGetUserByIdImpl.
 			EXPECT().
-			Do(gomock.Any(), id, false).
+			Do(gomock.Any(), &app.GetUserByIdInput{Id: id, Deleted: false}).
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
@@ -196,7 +196,7 @@ func TestUserController_GetUserById(t *testing.T) {
 		}
 
 		deps.mockGetUserByIdImpl.EXPECT().
-			Do(gomock.Any(), id, false).
+			Do(gomock.Any(), &app.GetUserByIdInput{Id: id, Deleted: false}).
 			Times(1).
 			Return(mockStruct, nil)
 
