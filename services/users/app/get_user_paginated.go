@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
@@ -49,7 +48,6 @@ func (gup *GetUserPaginatedImpl) Do(
 		return nil, err
 	}
 
-	fmt.Printf("%v", filters)
 	users := []GetUserPaginatedOutput{}
 
 	err = gup.crudRepository.GetPaginated(
