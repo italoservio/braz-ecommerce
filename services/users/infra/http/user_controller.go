@@ -177,11 +177,12 @@ func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 		return errors.New(exception.CodeInternal)
 	}
 
-	output, err := uc.getUserPaginatedImpl.Do(ctx, queryParams.Deleted, &app.GetUserPaginatedInput{
+	output, err := uc.getUserPaginatedImpl.Do(ctx, &app.GetUserPaginatedInput{
 		Page:    queryParams.Page,
 		PerPage: queryParams.PerPage,
 		Emails:  queryParams.Emails,
 		Ids:     queryParams.Ids,
+		Deleted: queryParams.Deleted,
 	})
 	if err != nil {
 		return err

@@ -11,7 +11,7 @@ import (
 )
 
 type GetUserPaginatedInterface interface {
-	Do(ctx context.Context, deleted bool, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
+	Do(ctx context.Context, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
 }
 
 type GetUserPaginatedImpl struct {
@@ -31,6 +31,7 @@ type GetUserPaginatedInput struct {
 	PerPage int
 	Emails  []string
 	Ids     []string
+	Deleted bool
 }
 
 type GetUserPaginatedOutput struct {
@@ -39,12 +40,11 @@ type GetUserPaginatedOutput struct {
 
 func (gup *GetUserPaginatedImpl) Do(
 	ctx context.Context,
-	deleted bool,
 	input *GetUserPaginatedInput,
 ) (*database.PaginatedSlice[GetUserPaginatedOutput], error) {
 	sorting := mountSorting()
 	projection := mountProjection()
-	filters, err := mountFilters(input, deleted)
+	filters, err := mountFilters(input)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (gup *GetUserPaginatedImpl) Do(
 	return output, nil
 }
 
-func mountFilters(input *GetUserPaginatedInput, deleted bool) (map[string]any, error) {
+func mountFilters(input *GetUserPaginatedInput) (map[string]any, error) {
 	filters := make(map[string]any)
 	if len(input.Emails) > 0 {
 		filters["email"] = input.Emails
@@ -90,7 +90,7 @@ func mountFilters(input *GetUserPaginatedInput, deleted bool) (map[string]any, e
 		filters["_id"] = ids
 	}
 
-	if !deleted {
+	if !input.Deleted {
 		filters["deleted_at"] = nil
 	}
 

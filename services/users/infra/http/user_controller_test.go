@@ -516,7 +516,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any(), false, gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(nil, errors.New(exception.CodeDatabaseFailed))
 
@@ -557,7 +557,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 
 		deps.mockGetUserPaginatedImpl.
 			EXPECT().
-			Do(gomock.Any(), false, gomock.Any()).
+			Do(gomock.Any(), gomock.Any()).
 			Times(1).
 			Return(mockStruct, nil)
 

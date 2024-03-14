@@ -42,7 +42,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
 		mockExpectedError := errors.New("something goes wrong")
-		input := &app.GetUserPaginatedInput{}
+		input := &app.GetUserPaginatedInput{Deleted: true}
 
 		filters := map[string]any{}
 		projection := map[string]int{
@@ -59,7 +59,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			Times(1).
 			Return(mockExpectedError)
 
-		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, true, input)
+		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err == nil {
 			t.Fail()
 		}
@@ -78,6 +78,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			PerPage: 10,
 			Ids:     []string{objId1.Hex(), objId2.Hex()},
 			Emails:  []string{"foo@bar.net"},
+			Deleted: true,
 		}
 
 		filters := map[string]any{
@@ -117,7 +118,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 				return nil
 			})
 
-		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, true, input)
+		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -176,7 +177,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 				return nil
 			})
 
-		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, false, input)
+		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -192,9 +193,10 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			Page:    1,
 			PerPage: 10,
 			Ids:     []string{"foo"},
+			Deleted: true,
 		}
 
-		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, true, input)
+		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
 		if err == nil {
 			t.Fail()
 		}
