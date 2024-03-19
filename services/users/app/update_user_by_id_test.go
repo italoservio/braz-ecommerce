@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	database_mocks "github.com/italoservio/braz_ecommerce/packages/database/mocks"
 	"github.com/italoservio/braz_ecommerce/packages/encryption"
+	encryption_mocks "github.com/italoservio/braz_ecommerce/packages/encryption/mocks"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/mocks"
@@ -19,8 +21,8 @@ import (
 type TestingDependencies_TestUpdateUser struct {
 	ctx                context.Context
 	ctrl               *gomock.Controller
-	encryption         *mocks.MockEncryptionInterface
-	mockCrudRepository *mocks.MockCrudRepositoryInterface
+	encryption         *encryption_mocks.MockEncryptionInterface
+	mockCrudRepository *database_mocks.MockCrudRepositoryInterface
 	mockUserRepository *mocks.MockUserRepositoryInterface
 	updateUserByIdImpl *app.UpdateUserByIdImpl
 }
@@ -28,8 +30,8 @@ type TestingDependencies_TestUpdateUser struct {
 func BeforeEach_TestUpdateUserById(t *testing.T) *TestingDependencies_TestUpdateUser {
 	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
-	encryption := mocks.NewMockEncryptionInterface(ctrl)
-	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	encryption := encryption_mocks.NewMockEncryptionInterface(ctrl)
+	mockCrudRepository := database_mocks.NewMockCrudRepositoryInterface(ctrl)
 	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
 
 	updateUserByIdImpl := app.NewUpdateUserByIdImpl(

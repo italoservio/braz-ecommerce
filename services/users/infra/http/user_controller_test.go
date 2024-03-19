@@ -15,6 +15,7 @@ import (
 	"github.com/italoservio/braz_ecommerce/packages/database"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/packages/logger"
+	logger_mocks "github.com/italoservio/braz_ecommerce/packages/logger/mocks"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 	"github.com/italoservio/braz_ecommerce/services/users/infra/http"
@@ -27,7 +28,7 @@ import (
 type TestingDependencies_TestUserController struct {
 	ctx                      context.Context
 	ctrl                     *gomock.Controller
-	mockLoggerImpl           *mocks.MockLoggerInterface
+	mockLoggerImpl           *logger_mocks.MockLoggerInterface
 	mockGetUserByIdImpl      *mocks.MockGetUserByIdInterface
 	mockDeleteUserByIdImpl   *mocks.MockDeleteUserByIdInterface
 	mockCreateUserImpl       *mocks.MockCreateUserInterface
@@ -40,7 +41,7 @@ func BeforeEach_TestUserController(t *testing.T) *TestingDependencies_TestUserCo
 	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
 
-	mockLoggerImpl := mocks.NewMockLoggerInterface(ctrl)
+	mockLoggerImpl := logger_mocks.NewMockLoggerInterface(ctrl)
 	mockGetUserByIdImpl := mocks.NewMockGetUserByIdInterface(ctrl)
 	mockDeleteUserByIdImpl := mocks.NewMockDeleteUserByIdInterface(ctrl)
 	mockCreateUserImpl := mocks.NewMockCreateUserInterface(ctrl)

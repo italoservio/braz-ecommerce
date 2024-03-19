@@ -13,6 +13,7 @@ const (
 	CorrelationId ContextKey = "X-Correlation-ID"
 )
 
+//go:generate mockgen --source=logger.go --destination=./mocks/logger_interface_mock.go --package=logger_mocks
 type LoggerInterface interface {
 	Info(msg string)
 	Error(msg string)

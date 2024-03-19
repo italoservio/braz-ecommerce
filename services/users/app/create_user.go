@@ -13,6 +13,7 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
 
+//go:generate mockgen --source=create_user.go --destination=../mocks/create_user_interface_mock.go --package=mocks
 type CreateUserInterface interface {
 	Do(ctx context.Context, input *CreateUserInput) (*CreateUserOutput, error)
 }

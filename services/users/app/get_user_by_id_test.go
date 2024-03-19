@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	database_mocks "github.com/italoservio/braz_ecommerce/packages/database/mocks"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/mocks"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ import (
 type TestingDependencies_TestGetUserById struct {
 	ctx                context.Context
 	ctrl               *gomock.Controller
-	mockCrudRepository *mocks.MockCrudRepositoryInterface
+	mockCrudRepository *database_mocks.MockCrudRepositoryInterface
 	mockUserRepository *mocks.MockUserRepositoryInterface
 	getUserByIdImpl    *app.GetUserByIdImpl
 }
@@ -25,7 +26,7 @@ type TestingDependencies_TestGetUserById struct {
 func BeforeEach_TestGetUserById(t *testing.T) *TestingDependencies_TestGetUserById {
 	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
-	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	mockCrudRepository := database_mocks.NewMockCrudRepositoryInterface(ctrl)
 	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
 
 	getUserByIdImpl := app.NewGetUserByIdImpl(mockCrudRepository, mockUserRepository)

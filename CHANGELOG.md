@@ -1,4 +1,7 @@
 # New version
+* BRAZ-36: Automatically generates gomock interfaces
+
+# v0.0.1
 * BRAZ-5: Create user Endpoint
 * BRAZ-7: Delete user by Id Endpoint
 * BRAZ-8: Get a single User Endpoint

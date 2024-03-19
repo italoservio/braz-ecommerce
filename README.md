@@ -32,7 +32,11 @@ The first step to start creating interface mocks is to install mockgen package
 ```sh
 go install go.uber.org/mock/mockgen@latest
 ```
-The next step is to go to the file where the target interface is located and copying the relative path and running the following command:
+The next step is to go to the file where the target interface is located and adding a `go:generate` directive:
 ```sh
-mockgen -source=${INSTANCE_FILE_RELATIVE_PATH} -destination=services/${SERVICE_NAME}/mocks/${INTERFACE_NAME}_interface_mock.go -package=mocks -write_generate_directive
+//go:generate mockgen --source=generics.go --destination=source/mock_generics_mock.go --package source
+```
+Finally, run the command to generate the interfaces automatically:
+```
+make mocks
 ```

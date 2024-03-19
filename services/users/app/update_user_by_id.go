@@ -13,6 +13,7 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/infra/storage"
 )
 
+//go:generate mockgen --source=update_user_by_id.go --destination=../mocks/update_user_by_id_interface_mock.go --package=mocks
 type UpdateUserByIdInterface interface {
 	Do(ctx context.Context, id string, input *UpdateUserByIdInput) (*UpdateUserByIdOutput, error)
 }

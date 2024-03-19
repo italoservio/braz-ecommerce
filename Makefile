@@ -12,6 +12,9 @@ stop:
 test:
 	go test ./...
 
+mocks:
+	go generate ./...
+
 coverage:
 	@mkdir -p .coverage
 	@go test ./... -coverprofile=coverage.out > /dev/null || true

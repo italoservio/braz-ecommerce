@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//go:generate mockgen --source=crud_repository.go --destination=./mocks/crud_repository_interface_mock.go --package=database_mocks
 type CrudRepositoryInterface interface {
 	GetById(
 		ctx context.Context,

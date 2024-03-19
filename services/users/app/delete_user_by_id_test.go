@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	database_mocks "github.com/italoservio/braz_ecommerce/packages/database/mocks"
 	"github.com/italoservio/braz_ecommerce/packages/exception"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/mocks"
@@ -17,7 +18,7 @@ import (
 type TestingDependencies_TestDeleteUserById struct {
 	ctx                context.Context
 	ctrl               *gomock.Controller
-	mockCrudRepository *mocks.MockCrudRepositoryInterface
+	mockCrudRepository *database_mocks.MockCrudRepositoryInterface
 	mockUserRepository *mocks.MockUserRepositoryInterface
 	deleteUserByIdImpl *app.DeleteUserByIdImpl
 }
@@ -25,7 +26,7 @@ type TestingDependencies_TestDeleteUserById struct {
 func BeforeEach_TestDeleteUserById(t *testing.T) *TestingDependencies_TestDeleteUserById {
 	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
-	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	mockCrudRepository := database_mocks.NewMockCrudRepositoryInterface(ctrl)
 	mockUserRepository := mocks.NewMockUserRepositoryInterface(ctrl)
 
 	deleteUserByIdImpl := app.NewDeleteUserByIdImpl(mockCrudRepository, mockUserRepository)
