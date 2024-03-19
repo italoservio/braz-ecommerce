@@ -49,35 +49,6 @@ func BeforeEach_TestUpdateUserById(t *testing.T) *TestingDependencies_TestUpdate
 }
 
 func TestUpdateUser_Do(t *testing.T) {
-	t.Run("should return error when failed to call database in GetById", func(t *testing.T) {
-		deps := BeforeEach_TestUpdateUserById(t)
-		defer deps.ctrl.Finish()
-
-		mockEmail := "goo@gle.com"
-
-		mockExpectedError := errors.New("something goes wrong")
-		id := primitive.NewObjectID().Hex()
-
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(mockExpectedError)
-
-		deps.mockUserRepository.
-			EXPECT().
-			GetByEmail(gomock.Any(), database.UsersCollection, mockEmail, gomock.Any()).
-			Times(1).
-			Return(mockExpectedError)
-
-		_, err := deps.updateUserByIdImpl.Do(deps.ctx, id, &app.UpdateUserByIdInput{Email: mockEmail})
-		if err == nil {
-			t.Fail()
-		}
-
-		assert.NotNil(t, err, "should return error")
-	})
-
 	t.Run("should return error when failed to call database in GetByEmail", func(t *testing.T) {
 		deps := BeforeEach_TestUpdateUserById(t)
 		defer deps.ctrl.Finish()
@@ -86,12 +57,6 @@ func TestUpdateUser_Do(t *testing.T) {
 
 		mockExpectedError := errors.New("something goes wrong")
 		id := primitive.NewObjectID().Hex()
-
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(nil)
 
 		deps.mockUserRepository.
 			EXPECT().
@@ -114,12 +79,6 @@ func TestUpdateUser_Do(t *testing.T) {
 		mockEmail := "goo@gle.com"
 
 		id := primitive.NewObjectID().Hex()
-
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(nil)
 
 		deps.mockUserRepository.
 			EXPECT().
@@ -156,12 +115,6 @@ func TestUpdateUser_Do(t *testing.T) {
 		mockEmail := "goo@gle.com"
 
 		id := primitive.NewObjectID().Hex()
-
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(nil)
 
 		deps.mockUserRepository.
 			EXPECT().
@@ -207,12 +160,6 @@ func TestUpdateUser_Do(t *testing.T) {
 
 		id := primitive.NewObjectID().Hex()
 
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(nil)
-
 		deps.mockUserRepository.
 			EXPECT().
 			GetByEmail(gomock.Any(), database.UsersCollection, mockEmail, gomock.Any()).
@@ -256,12 +203,6 @@ func TestUpdateUser_Do(t *testing.T) {
 		mockEmail := "goo@gle.com"
 
 		id := primitive.NewObjectID().Hex()
-
-		deps.mockCrudRepository.
-			EXPECT().
-			GetById(gomock.Any(), database.UsersCollection, id, false, gomock.Any()).
-			Times(1).
-			Return(nil)
 
 		deps.mockUserRepository.
 			EXPECT().

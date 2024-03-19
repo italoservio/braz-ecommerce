@@ -67,7 +67,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		assert.NotNil(t, err, "should return error")
 	})
 
-	t.Run("should return empty error when executed successfully", func(t *testing.T) {
+	t.Run("should return empty error when executed successfully to get deleted items", func(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
 		objId1 := primitive.NewObjectID()
@@ -127,7 +127,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		assert.Equal(t, 1, len(*structures.Items), "should return one structure")
 	})
 
-	t.Run("should return empty error when executed successfully", func(t *testing.T) {
+	t.Run("should return empty error when executed successfully to get not deleted items", func(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
 		objId1 := primitive.NewObjectID()
@@ -138,11 +138,13 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			PerPage: 10,
 			Ids:     []string{objId1.Hex(), objId2.Hex()},
 			Emails:  []string{"foo@bar.net"},
+			Deleted: false,
 		}
 
 		filters := map[string]any{
-			"_id":   []primitive.ObjectID{objId1, objId2},
-			"email": []string{"foo@bar.net"},
+			"_id":        []primitive.ObjectID{objId1, objId2},
+			"email":      []string{"foo@bar.net"},
+			"deleted_at": nil,
 		}
 		projection := map[string]int{
 			"password":   0,
@@ -154,7 +156,16 @@ func TestGetUserPaginated_Do(t *testing.T) {
 
 		deps.mockCrudRepository.
 			EXPECT().
-			GetPaginated(gomock.Any(), database.UsersCollection, input.Page, input.PerPage, filters, projection, sorting, gomock.Any()).
+			GetPaginated(
+				gomock.Any(),
+				database.UsersCollection,
+				input.Page,
+				input.PerPage,
+				filters,
+				projection,
+				sorting,
+				gomock.Any(),
+			).
 			Times(1).
 			DoAndReturn(func(
 				ctx context.Context,

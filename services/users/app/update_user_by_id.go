@@ -55,16 +55,8 @@ func (gu *UpdateUserByIdImpl) Do(
 ) (*UpdateUserByIdOutput, error) {
 	var existentUser domain.UserDatabaseNoPassword
 
-	output := UpdateUserByIdOutput{}
-
-	err := gu.crudRepository.GetById(ctx, database.UsersCollection, id, false, &output)
-
-	if err != nil {
-		return nil, errors.New(exception.CodePermission)
-	}
-
 	if input.Email != "" {
-		err = gu.userRepository.GetByEmail(
+		err := gu.userRepository.GetByEmail(
 			ctx,
 			database.UsersCollection,
 			input.Email,
@@ -94,7 +86,9 @@ func (gu *UpdateUserByIdImpl) Do(
 
 	input.UpdatedAt = time.Now()
 
-	err = gu.crudRepository.UpdateById(ctx, database.UsersCollection, id, &input, &output)
+	var output = UpdateUserByIdOutput{}
+
+	err := gu.crudRepository.UpdateById(ctx, database.UsersCollection, id, &input, &output)
 
 	if err != nil {
 		return nil, err

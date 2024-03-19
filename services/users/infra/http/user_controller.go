@@ -118,16 +118,6 @@ func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	if err := validation.ValidateRequest(c, queryParams); err != nil {
-		uc.logger.WithCtx(ctx).Error(err.Error())
-		return errors.New(exception.CodeValidationFailed)
-	}
-
-	if err != nil {
-		uc.logger.WithCtx(ctx).Error(err.Error())
-		return errors.New(exception.CodeValidationFailed)
-	}
-
 	user, err := uc.getUserByIdImpl.Do(ctx, &app.GetUserByIdInput{
 		Id:      id,
 		Deleted: queryParams.Deleted,
@@ -157,7 +147,7 @@ type GetUserPaginatedPayload struct {
 	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
 	Emails  []string `query:"email" validate:"omitempty,dive,email"`
 	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
-	Deleted bool     `query:"deleted" validate:"required"`
+	Deleted bool     `query:"deleted"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
@@ -173,11 +163,6 @@ func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 	if err := validation.ValidateRequest(c, queryParams); err != nil {
 		uc.logger.WithCtx(ctx).Error(err.Error())
 		return errors.New(exception.CodeValidationFailed)
-	}
-
-	if err != nil {
-		uc.logger.WithCtx(ctx).Error(err.Error())
-		return errors.New(exception.CodeInternal)
 	}
 
 	output, err := uc.getUserPaginatedImpl.Do(ctx, &app.GetUserPaginatedInput{
