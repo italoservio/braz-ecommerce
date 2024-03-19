@@ -48,7 +48,36 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		var result MockStructure
 
-		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), false, &result)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		assert.Nil(t, err, "should not return error")
+		assert.Equal(t, "bar", result.Foo, "should return the expected object by id")
+	})
+
+	rootMt.Run("should return the document when successfully calling the database with the tag deleted", func(nestedMt *mtest.T) {
+		mockId := primitive.NewObjectID()
+
+		nestedMt.AddMockResponses(mtest.CreateCursorResponse(
+			1,
+			MOCK_NS,
+			mtest.FirstBatch,
+			bson.D{
+				{Key: "_id", Value: mockId},
+				{Key: "foo", Value: "bar"},
+			},
+		))
+		defer nestedMt.ClearMockResponses()
+
+		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
+		crudRepository := database.NewCrudRepository(logger, mockDB)
+
+		var result MockStructure
+
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), true, &result)
 		if err != nil {
 			t.Log(err.Error())
 			t.Fail()
@@ -74,7 +103,7 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		var result MockStructure
 
-		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), false, &result)
 		if err == nil {
 			t.Fail()
 		}
@@ -94,7 +123,7 @@ func TestCrudRepository_GetById(t *testing.T) {
 
 		var result MockStructure
 
-		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), &result)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockId.Hex(), false, &result)
 		if err == nil {
 			t.Fail()
 		}
@@ -110,7 +139,7 @@ func TestCrudRepository_GetById(t *testing.T) {
 		mockDB := &database.Database{nestedMt.Client.Database(MOCK_DB_NAME)}
 		crudRepository := database.NewCrudRepository(logger, mockDB)
 
-		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockWrongId, &mockStructure)
+		err := crudRepository.GetById(ctx, MOCK_COLL_NAME, mockWrongId, false, &mockStructure)
 		if err == nil {
 			t.Fail()
 		}

@@ -42,7 +42,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
 		mockExpectedError := errors.New("something goes wrong")
-		input := &app.GetUserPaginatedInput{}
+		input := &app.GetUserPaginatedInput{Deleted: true}
 
 		filters := map[string]any{}
 		projection := map[string]int{
@@ -67,7 +67,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		assert.NotNil(t, err, "should return error")
 	})
 
-	t.Run("should return empty error when executed successfully", func(t *testing.T) {
+	t.Run("should return empty error when executed successfully to get deleted items", func(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
 		objId1 := primitive.NewObjectID()
@@ -78,6 +78,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			PerPage: 10,
 			Ids:     []string{objId1.Hex(), objId2.Hex()},
 			Emails:  []string{"foo@bar.net"},
+			Deleted: true,
 		}
 
 		filters := map[string]any{
@@ -126,6 +127,76 @@ func TestGetUserPaginated_Do(t *testing.T) {
 		assert.Equal(t, 1, len(*structures.Items), "should return one structure")
 	})
 
+	t.Run("should return empty error when executed successfully to get not deleted items", func(t *testing.T) {
+		deps := BeforeEach_TestGetUserPaginated(t)
+
+		objId1 := primitive.NewObjectID()
+		objId2 := primitive.NewObjectID()
+
+		input := &app.GetUserPaginatedInput{
+			Page:    1,
+			PerPage: 10,
+			Ids:     []string{objId1.Hex(), objId2.Hex()},
+			Emails:  []string{"foo@bar.net"},
+			Deleted: false,
+		}
+
+		filters := map[string]any{
+			"_id":        []primitive.ObjectID{objId1, objId2},
+			"email":      []string{"foo@bar.net"},
+			"deleted_at": nil,
+		}
+		projection := map[string]int{
+			"password":   0,
+			"cipher_key": 0,
+		}
+		sorting := map[string]int{
+			"created_at": -1,
+		}
+
+		deps.mockCrudRepository.
+			EXPECT().
+			GetPaginated(
+				gomock.Any(),
+				database.UsersCollection,
+				input.Page,
+				input.PerPage,
+				filters,
+				projection,
+				sorting,
+				gomock.Any(),
+			).
+			Times(1).
+			DoAndReturn(func(
+				ctx context.Context,
+				collection string,
+				page int,
+				perPage int,
+				filters map[string]any,
+				projection map[string]int,
+				sorting map[string]int,
+				structures any,
+			) error {
+				*structures.(*[]app.GetUserPaginatedOutput) = []app.GetUserPaginatedOutput{
+					{UserDatabaseNoPassword: &domain.UserDatabaseNoPassword{
+						DatabaseIdentifier: &database.DatabaseIdentifier{
+							Id: "123",
+						},
+					}},
+				}
+
+				return nil
+			})
+
+		structures, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		assert.Nil(t, err, "should not return an error")
+		assert.Equal(t, 1, len(*structures.Items), "should return one structure")
+	})
+
 	t.Run("should return error when the filter id isn't a valid database id", func(t *testing.T) {
 		deps := BeforeEach_TestGetUserPaginated(t)
 
@@ -133,6 +204,7 @@ func TestGetUserPaginated_Do(t *testing.T) {
 			Page:    1,
 			PerPage: 10,
 			Ids:     []string{"foo"},
+			Deleted: true,
 		}
 
 		_, err := deps.getUserPaginatedImpl.Do(deps.ctx, input)

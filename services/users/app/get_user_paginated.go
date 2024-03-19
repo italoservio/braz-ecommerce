@@ -30,6 +30,7 @@ type GetUserPaginatedInput struct {
 	PerPage int
 	Emails  []string
 	Ids     []string
+	Deleted bool
 }
 
 type GetUserPaginatedOutput struct {
@@ -85,6 +86,10 @@ func mountFilters(input *GetUserPaginatedInput) (map[string]any, error) {
 		}
 
 		filters["_id"] = ids
+	}
+
+	if !input.Deleted {
+		filters["deleted_at"] = nil
 	}
 
 	return filters, nil

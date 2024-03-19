@@ -19,6 +19,7 @@ type CrudRepositoryInterface interface {
 		ctx context.Context,
 		collection string,
 		id string,
+		deleted bool,
 		structure any,
 	) error
 	DeleteById(
@@ -63,6 +64,7 @@ func (cr *CrudRepository) GetById(
 	ctx context.Context,
 	collection string,
 	id string,
+	deleted bool,
 	structure any,
 ) error {
 	coll := cr.database.Collection(collection)
@@ -76,7 +78,13 @@ func (cr *CrudRepository) GetById(
 		return errors.New(exception.CodeValidationFailed)
 	}
 
-	err = coll.FindOne(timeout, bson.M{"_id": objectId}).Decode(structure)
+	filter := bson.M{"_id": objectId, "deleted_at": nil}
+
+	if deleted {
+		filter = bson.M{"_id": objectId}
+	}
+
+	err = coll.FindOne(timeout, filter).Decode(structure)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			cr.logger.WithCtx(ctx).Error(err.Error())
@@ -166,6 +174,7 @@ func (cr *CrudRepository) UpdateById(
 		timeout,
 		bson.M{"_id": objectId},
 		bson.D{{Key: "$set", Value: document}},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(outputStructure)
 
 	if err != nil {

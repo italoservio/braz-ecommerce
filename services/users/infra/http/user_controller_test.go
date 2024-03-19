@@ -79,17 +79,44 @@ func TestUserController_GetUserById(t *testing.T) {
 	deps := BeforeEach_TestUserController(t)
 	defer deps.ctrl.Finish()
 
+	t.Run("should mount the http exception when there is an error parsing query params", func(t *testing.T) {
+
+		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
+		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
+
+		req := httptest.NewRequest("GET", "/api/v1/users/123456?deleted=falseee", nil)
+
+		response, err := fbr.Test(req, -1)
+		if err != nil {
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		bytes, err := io.ReadAll(response.Body)
+		if err != nil {
+
+			t.Log(err.Error())
+			t.Fail()
+		}
+
+		var httpResponse exception.HTTPException
+		json.Unmarshal(bytes, &httpResponse)
+
+		assert.Equal(t, 400, httpResponse.StatusCode, "should return expected status code")
+		assert.Equal(t, "Invalid input for one or more required attributes", httpResponse.ErrorMessage, "should return expected error message")
+	})
+
 	t.Run("should mount http exception when receiving an error from app", func(t *testing.T) {
 		id := primitive.NewObjectID().Hex()
 		deps.mockGetUserByIdImpl.
 			EXPECT().
-			Do(gomock.Any(), id).
+			Do(gomock.Any(), &app.GetUserByIdInput{Id: id, Deleted: false}).
 			Times(1).
 			Return(nil, errors.New(exception.CodeNotFound))
 
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
-		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s?deleted=false", id), nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -119,13 +146,13 @@ func TestUserController_GetUserById(t *testing.T) {
 		}
 
 		deps.mockGetUserByIdImpl.EXPECT().
-			Do(gomock.Any(), id).
+			Do(gomock.Any(), &app.GetUserByIdInput{Id: id, Deleted: false}).
 			Times(1).
 			Return(mockStruct, nil)
 
 		fbr := fiber.New()
 		fbr.Get("/api/v1/users/:id", deps.userController.GetUserById)
-		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s", id), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/users/%s?deleted=false", id), nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {
@@ -460,7 +487,7 @@ func TestUserController_GetUserPaginated(t *testing.T) {
 		fbr := fiber.New(fiber.Config{ErrorHandler: exception.HttpExceptionHandler})
 		fbr.Get(getUserPaginatedEndpoint, deps.userController.GetUserPaginated)
 
-		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10", nil)
+		req := httptest.NewRequest("GET", "/api/v1/users?page=1&per_page=10&deleted=false", nil)
 
 		response, err := fbr.Test(req, -1)
 		if err != nil {

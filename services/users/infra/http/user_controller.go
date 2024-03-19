@@ -102,11 +102,26 @@ func (uc *UserControllerImpl) UpdateUserById(c *fiber.Ctx) error {
 	return c.JSON(output)
 }
 
+type GetUserByIdPayload struct {
+	Deleted bool `query:"deleted"`
+}
+
 func (uc *UserControllerImpl) GetUserById(c *fiber.Ctx) error {
 	ctx := c.Context()
 	id := c.Params("id")
+	queryParams := GetUserByIdPayload{}
 
-	user, err := uc.getUserByIdImpl.Do(ctx, id)
+	err := c.QueryParser(&queryParams)
+
+	if err != nil {
+		uc.logger.WithCtx(ctx).Error(err.Error())
+		return errors.New(exception.CodeValidationFailed)
+	}
+
+	user, err := uc.getUserByIdImpl.Do(ctx, &app.GetUserByIdInput{
+		Id:      id,
+		Deleted: queryParams.Deleted,
+	})
 	if err != nil {
 		return err
 	}
@@ -132,6 +147,7 @@ type GetUserPaginatedPayload struct {
 	PerPage int      `query:"per_page" validate:"required,number,gt=0,lte=100"`
 	Emails  []string `query:"email" validate:"omitempty,dive,email"`
 	Ids     []string `query:"id" validate:"omitempty,dive,mongodb"`
+	Deleted bool     `query:"deleted"`
 }
 
 func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
@@ -154,6 +170,7 @@ func (uc *UserControllerImpl) GetUserPaginated(c *fiber.Ctx) error {
 		PerPage: queryParams.PerPage,
 		Emails:  queryParams.Emails,
 		Ids:     queryParams.Ids,
+		Deleted: queryParams.Deleted,
 	})
 	if err != nil {
 		return err
