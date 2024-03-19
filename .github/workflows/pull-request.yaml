@@ -1,0 +1,108 @@
+name: Preflight Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  Changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Ticket Number
+        id: ext_ticket_number
+        run: |
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"        
+          REGEXP=([BRAZ]+-[0-9]+)
+          TICKET_NUMBER=$(echo "$HEAD_BRANCH" | grep -oE "$REGEXP")
+
+          if [ -z "$TICKET_NUMBER" ]; then
+            exit 1
+          fi
+
+          echo "TICKET_NUMBER=$TICKET_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: CHANGELOG.md
+
+      - name: Validate CHANGELOG
+        id: validate_changelog
+        env:
+          TICKET_NUMBER: ${{ steps.ext_ticket_number.outputs.TICKET_NUMBER }}
+        run: |
+          FOUND_STR=$(grep "$TICKET_NUMBER" "CHANGELOG.md")
+
+          if [ -z "$FOUND_STR" ]; then
+            echo "🚨 Ticket number not found in CHANGELOG.md"
+            exit 1
+          fi
+
+          echo "✅ Cheers! Ticket number found in CHANGELOG.md!"
+
+  UnitTests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+
+      - name: Start Golang container
+        id: start_golang_container
+        run: |
+          docker run -d \
+          --name golang \
+          -v ${{ github.workspace }}:/app \
+          -w /app \
+          golang:1.21.6-bullseye \
+          tail -f /dev/null
+
+      - name: Run Unit Tests
+        id: run_unit_tests
+        run: |          
+          cat <<< '
+          #!/bin/bash
+
+          make coverage > coverage.txt
+          cat coverage.txt
+
+          COVERAGE_PERCENTAGE=$(grep "^total:" "coverage.txt" | awk "{print \$NF}")
+
+          if [ "$COVERAGE_PERCENTAGE" != "100.0%" ]; then
+            echo "🚨 Coverage is not 100%. Actual coverage: $COVERAGE_PERCENTAGE"
+            exit 1
+          fi
+
+          echo "✅ Cheers! Code coverage is 100%!"
+          ' > script.sh
+
+          chmod +x script.sh
+
+          docker exec golang /bin/bash -c "/app/script.sh"
+
+  Terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout_code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: .terraform
+          
+      - name: Setup Terraform
+        id: setup_terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.4"
+
+      - name: Run Terraform Fmt
+        id: run_terraform_fmt
+        working-directory: .terraform/modules/main
+        run: terraform fmt -check
