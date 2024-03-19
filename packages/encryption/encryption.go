@@ -13,6 +13,7 @@ import (
 	"github.com/italoservio/braz_ecommerce/packages/logger"
 )
 
+//go:generate mockgen --source=encryption.go --destination=./mocks/encryption_interface_mock.go --package=encryption_mocks
 type EncryptionInterface interface {
 	Encrypt(
 		ctx context.Context,

@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+//go:generate mockgen --source=user_repository.go --destination=../../mocks/user_repository_interface_mock.go --package=mocks
 type UserRepositoryInterface interface {
 	GetByEmail(
 		ctx context.Context,

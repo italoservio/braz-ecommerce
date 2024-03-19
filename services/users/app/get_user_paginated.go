@@ -9,6 +9,7 @@ import (
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
 )
 
+//go:generate mockgen --source=get_user_paginated.go --destination=../mocks/get_user_paginated_interface_mock.go --package=mocks
 type GetUserPaginatedInterface interface {
 	Do(ctx context.Context, input *GetUserPaginatedInput) (*database.PaginatedSlice[GetUserPaginatedOutput], error)
 }

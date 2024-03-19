@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/italoservio/braz_ecommerce/packages/database"
+	database_mocks "github.com/italoservio/braz_ecommerce/packages/database/mocks"
 	"github.com/italoservio/braz_ecommerce/services/users/app"
 	"github.com/italoservio/braz_ecommerce/services/users/domain"
-	"github.com/italoservio/braz_ecommerce/services/users/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/mock/gomock"
@@ -18,14 +18,14 @@ import (
 type TestingDependencies_TestGetUserPaginated struct {
 	ctx                  context.Context
 	ctrl                 *gomock.Controller
-	mockCrudRepository   *mocks.MockCrudRepositoryInterface
+	mockCrudRepository   *database_mocks.MockCrudRepositoryInterface
 	getUserPaginatedImpl *app.GetUserPaginatedImpl
 }
 
 func BeforeEach_TestGetUserPaginated(t *testing.T) *TestingDependencies_TestGetUserPaginated {
 	ctx := context.TODO()
 	ctrl := gomock.NewController(t)
-	mockCrudRepository := mocks.NewMockCrudRepositoryInterface(ctrl)
+	mockCrudRepository := database_mocks.NewMockCrudRepositoryInterface(ctrl)
 
 	getUserPaginatedImpl := app.NewGetUserPaginatedImpl(mockCrudRepository)
 
